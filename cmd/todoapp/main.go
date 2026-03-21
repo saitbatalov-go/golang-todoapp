@@ -6,3 +6,4 @@ func main() {
     fmt.Println("Привет, мир!")
 }
 
+
