@@ -72,3 +72,6 @@ env-port-forward:
 
 env-port-close:
 	@docker compose down port-forwarder 
+
+run:
+	@go run cmd/todoapp/main.go
