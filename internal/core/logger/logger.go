@@ -57,6 +57,13 @@ func NewLoqger(config Config) (*Logger, error) {
 
 }
 
+func With (l *Logger, fields ...zap.Field) *Logger {
+	return &Logger{
+		Logger: l.With(fields...),
+		file:   l.file,
+	}
+}
+
 
 func (l *Logger) Close() {
 	if err:= l.file.Close(); err != nil {
