@@ -49,12 +49,44 @@ func Logger(log *core_logger.Logger) Middleware {
 func Panic() Middleware {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			
+			ctx:=r.Context()
+			log:= core_logger.FromLogger(ctx)
+
+			responseHanfler:= core_http_response.NewHTTPResponseHandler(log, w)
+
 			defer func() {
-				if err := recover(); err != nil {
-					w.WriteHeader(http.StatusInternalServerError)
+				if err:= recover(); err!=nil {
+					
+					responseHanfler.PanicResponse(err, "during handling request got unexpected panic")
 				}
 			}()
 			next.ServeHTTP(w, r)
+		})
+	}
+}
+
+
+func Trace() Middleware {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+
+			ctx:=r.Context()
+			log:= core_logger.FromLogger(ctx)
+
+			before:= time.Now()
+
+			log.Debug(
+				">> incoming HTTP request", 
+				zap.Time("time", before.UTC())
+				)
+
+			next.ServeHTTP(w, r)
+
+			log.Debug(
+				"<< outgoing HTTP request", 
+				zap.Time("Продолжительность времени выполнения запроса", time.Now().Sub(before))
+			)
 		})
 	}
 }
