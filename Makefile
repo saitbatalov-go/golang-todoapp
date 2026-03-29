@@ -73,5 +73,7 @@ env-port-forward:
 env-port-close:
 	@docker compose down port-forwarder 
 
-run:
-	@go run cmd/todoapp/main.go
+todoapp-run:
+	@export LOGGER_FOLDER=$(PROJECT_ROOT)/out/logs && \
+	go mode tidy && \
+	go run cmd/todoapp/main.go

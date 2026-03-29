@@ -2,6 +2,7 @@ package users_transport_http
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 )
 
@@ -20,8 +21,8 @@ type CreateUserResponse struct {
 func (h *UserHTTPHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
 	var request CreateUserRequest
 	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		return
+		
+		fmt.Printf("апишка тут дожен быть для создания юзер")
 	}
 
 
