@@ -3,9 +3,11 @@ package core_http_middleware
 import (
 	"context"
 	"net/http"
+	"time"
 
 	"github.com/google/uuid"
 	core_logger "github.com/saitbatalov-go/golang-todoapp/internal/core/logger"
+	core_http_response "github.com/saitbatalov-go/golang-todoapp/internal/core/transport/http/response"
 	"go.uber.org/zap"
 )
 
@@ -36,7 +38,7 @@ func Logger(log *core_logger.Logger) Middleware {
 
 			l:= log.With(
 				zap.String("request_id", requestID),
-				zap.String("url", r.URL.String())
+				zap.String("url", r.URL.String()),
 			)
 
 			ctx:=context.WithValue(r.Context(), "logger", l)
@@ -79,7 +81,7 @@ func Trace() Middleware {
 
 			log.Debug(
 				">> incoming HTTP request", 
-				zap.Time("time", before.UTC())
+				zap.Time("time", before.UTC()),
 				)
 
 			next.ServeHTTP(rw, r)
@@ -87,7 +89,7 @@ func Trace() Middleware {
 			log.Debug(
 				"<< outgoing HTTP request",
 				zap.Int("status_code", rw.GetStatusCodeOrPanic()), 
-				zap.Time("Продолжительность времени выполнения запроса", time.Now().Sub(before))
+				zap.Time("Продолжительность времени выполнения запроса", time.Now().Add(time.Since(before)).UTC()),
 			)
 		})
 	}

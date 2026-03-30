@@ -75,5 +75,5 @@ env-port-close:
 
 todoapp-run:
 	@export LOGGER_FOLDER=$(PROJECT_ROOT)/out/logs && \
-	go mode tidy && \
+	go mod tidy && \
 	go run cmd/todoapp/main.go
