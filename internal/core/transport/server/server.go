@@ -32,7 +32,10 @@ func (s *HTTPServer) RegisterAPIRouters(routers ...*APIVersionRouter) {
 	for _, router := range routers {
 		prefix := "/api/" + string(router.ApiVersion)
 
-		s.mux.Handle(prefix+"/", http.StripPrefix(prefix, router))
+		s.mux.Handle(
+			prefix+"/",
+			http.StripPrefix(prefix, router),
+		)
 
 	}
 }
@@ -43,7 +46,7 @@ func (s *HTTPServer) Run(ctx context.Context) error {
 		s.middleware...,
 	)
 
-	server := http.Server{
+	server := &http.Server{
 		Addr:    s.config.Addr,
 		Handler: mux,
 	}

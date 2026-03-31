@@ -2,6 +2,7 @@ package core_http_middleware
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"time"
 
@@ -21,7 +22,7 @@ func RequestID() Middleware {
 			requestID := r.Header.Get(requestIDHeader)
 
 			if requestID == "" {
-				requestID = uuid.New().String()
+				requestID = uuid.NewString()
 			}
 			r.Header.Set(requestIDHeader, requestID)
 			w.Header().Set(requestIDHeader, requestID)
@@ -34,16 +35,15 @@ func RequestID() Middleware {
 func Logger(log *core_logger.Logger) Middleware {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			requestID:= r.Header.Get(requestIDHeader)
+			requestID := r.Header.Get(requestIDHeader)
 
-			l:= log.With(
+			l := log.With(
 				zap.String("request_id", requestID),
 				zap.String("url", r.URL.String()),
 			)
 
-			ctx:=context.WithValue(r.Context(), "logger", l)
+			ctx := context.WithValue(r.Context(), "log", l)
 			next.ServeHTTP(w, r.WithContext(ctx))
-
 		})
 	}
 }
@@ -51,15 +51,18 @@ func Logger(log *core_logger.Logger) Middleware {
 func Panic() Middleware {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			
-			ctx:=r.Context()
-			log:= core_logger.FromLogger(ctx)
 
-			responseHanfler:= core_http_response.NewHTTPResponseHandler(log, w)
+			ctx := r.Context()
+			fmt.Println("!!!!!!!!ЕСТЬ В КОНТЕКСТЕ ЛОГГЕРА"	)
+			log := core_logger.FromLogger(	
+				
+				ctx)
+
+			responseHanfler := core_http_response.NewHTTPResponseHandler(log, w)
 
 			defer func() {
-				if err:= recover(); err!=nil {
-					
+				if err := recover(); err != nil {
+
 					responseHanfler.PanicResponse(err, "during handling request got unexpected panic")
 				}
 			}()
@@ -68,27 +71,26 @@ func Panic() Middleware {
 	}
 }
 
-
 func Trace() Middleware {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
-			ctx:=r.Context()
-			log:= core_logger.FromLogger(ctx)
-			rw:= core_http_response.NewResponseWriter(w)
+			ctx := r.Context()
+			log := core_logger.FromLogger(ctx)
+			rw := core_http_response.NewResponseWriter(w)
 
-			before:= time.Now()
+			before := time.Now()
 
 			log.Debug(
-				">> incoming HTTP request", 
+				">> incoming HTTP request",
 				zap.Time("time", before.UTC()),
-				)
+			)
 
 			next.ServeHTTP(rw, r)
 
 			log.Debug(
 				"<< outgoing HTTP request",
-				zap.Int("status_code", rw.GetStatusCodeOrPanic()), 
+				zap.Int("status_code", rw.GetStatusCodeOrPanic()),
 				zap.Time("Продолжительность времени выполнения запроса", time.Now().Add(time.Since(before)).UTC()),
 			)
 		})

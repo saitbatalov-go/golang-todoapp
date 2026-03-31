@@ -18,9 +18,9 @@ type Logger struct {
 }
 
 func FromLogger(ctx context.Context) *Logger {
-	log, ok:=ctx.Value("log").(*Logger)
+	log, ok := ctx.Value("log").(*Logger)
 	if !ok {
-		panic("no logger in context")
+		panic("НУ НАШЕЛ В КОНТЕКСТЕ ЛОГГЕРА ПОЭТОМУ ПРОИЗОШЛО ПАНИКА")
 	}
 	return log
 }
@@ -66,16 +66,15 @@ func NewLoqger(config Config) (*Logger, error) {
 
 }
 
-func With (l *Logger, fields ...zap.Field) *Logger {
+func With(l *Logger, fields ...zap.Field) *Logger {
 	return &Logger{
 		Logger: l.With(fields...),
 		file:   l.file,
 	}
 }
 
-
 func (l *Logger) Close() {
-	if err:= l.file.Close(); err != nil {
+	if err := l.file.Close(); err != nil {
 		fmt.Println("failes to close app logger:", err)
-	 } 
+	}
 }
