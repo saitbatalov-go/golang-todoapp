@@ -3,7 +3,7 @@ package users_transport_http
 import (
 	"net/http"
 
-	core_transport_server "github.com/saitbatalov-go/golang-todoapp/internal/core/transport/server"
+	core_transport_server "github.com/saitbatalov-go/golang-todoapp/internal/core/transport/http/server"
 )
 
 type UserHTTPHandler struct {

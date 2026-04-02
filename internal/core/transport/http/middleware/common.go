@@ -51,15 +51,12 @@ func Logger(log *core_logger.Logger) Middleware {
 func Panic() Middleware {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-
+			
 			ctx := r.Context()
-			fmt.Println("!!!!!!!!ЕСТЬ В КОНТЕКСТЕ ЛОГГЕРА"	)
-			log := core_logger.FromLogger(	
-				
-				ctx)
-
+			log := core_logger.FromLogger(ctx)
+			
 			responseHanfler := core_http_response.NewHTTPResponseHandler(log, w)
-
+			
 			defer func() {
 				if err := recover(); err != nil {
 

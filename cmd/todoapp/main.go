@@ -9,7 +9,7 @@ import (
 
 	core_logger "github.com/saitbatalov-go/golang-todoapp/internal/core/logger"
 	core_http_middleware "github.com/saitbatalov-go/golang-todoapp/internal/core/transport/http/middleware"
-	core_transport_server "github.com/saitbatalov-go/golang-todoapp/internal/core/transport/server"
+	core_transport_server "github.com/saitbatalov-go/golang-todoapp/internal/core/transport/http/server"
 	users_transport_http "github.com/saitbatalov-go/golang-todoapp/internal/features/users/transport/http"
 	"go.uber.org/zap"
 )
@@ -21,7 +21,7 @@ func main() {
 	)
 	defer cancel()
 
-	logger, err := core_logger.NewLoqger(core_logger.NewConfigMust())
+	logger, err := core_logger.NewLogger(core_logger.NewConfigMust())
 	if err != nil {
 		fmt.Println("failed to create logger:", err)
 		os.Exit(1)

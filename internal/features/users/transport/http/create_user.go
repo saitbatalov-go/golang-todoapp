@@ -20,7 +20,7 @@ type CreateUserResponse struct {
 	PhoneNumber *string `json:"phone_number"`
 }
 
-func (h *UserHTTPHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
+func (h *UserHTTPHandler) CreateUser(rw http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	log := core_logger.FromLogger(ctx)
 

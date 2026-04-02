@@ -20,12 +20,12 @@ type Logger struct {
 func FromLogger(ctx context.Context) *Logger {
 	log, ok := ctx.Value("log").(*Logger)
 	if !ok {
-		panic("НУ НАШЕЛ В КОНТЕКСТЕ ЛОГГЕРА ПОЭТОМУ ПРОИЗОШЛО ПАНИКА")
+		panic("no logger in context")
 	}
 	return log
 }
 
-func NewLoqger(config Config) (*Logger, error) {
+func NewLogger(config Config) (*Logger, error) {
 	zaplvl := zap.NewAtomicLevel()
 	if err := zaplvl.UnmarshalText([]byte(config.Level)); err != nil {
 		return nil, fmt.Errorf("Unmarshal log level: %w", err)
@@ -66,11 +66,11 @@ func NewLoqger(config Config) (*Logger, error) {
 
 }
 
-func With(l *Logger, fields ...zap.Field) *Logger {
-	return &Logger{
-		Logger: l.With(fields...),
-		file:   l.file,
-	}
+func (l *Logger) With(fields ...zap.Field) *Logger {
+    return &Logger{
+        Logger: l.Logger.With(fields...),
+        file:   l.file,
+    }
 }
 
 func (l *Logger) Close() {
