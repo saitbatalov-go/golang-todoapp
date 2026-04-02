@@ -32,4 +32,6 @@ func (h *UserHTTPHandler) CreateUser(rw http.ResponseWriter, r *http.Request) {
 		fmt.Printf("апишка тут дожен быть для создания юзер")
 	}
 
+	rw.WriteHeader(http.StatusOK)
+
 }
