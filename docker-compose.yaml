@@ -8,6 +8,7 @@ services:
       - POSTGRES_DB=${POSTGRES_DB}
     volumes:
       - ${PROJECT_ROOT}/out/pgdata:/var/lib/postgresql
+    user: "${UID:-1000}:${GID:-1000}" 
     restart: always
 
   todoapp-postgres-migrate:
