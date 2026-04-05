@@ -9,17 +9,15 @@ services:
     volumes:
       - ${PROJECT_ROOT}/out/pgdata:/var/lib/postgresql
     user: "1000:1000"
-    restart: always
+    restart: unless-stopped
 
   todoapp-postgres-migrate:
     image: migrate/migrate:v4.19.1
     volumes:
       - ${PROJECT_ROOT}/migrations:/migrations
-    user: "1000:1000"
   port-forwarder:
     image: alpine/socat:1.8.0.3
     container_name: todoapp-postgres-port-forwarder
     command: tcp-listen:5432,fork,reuseaddr tcp-connect:todoapp-postgres:5432
     ports:
       - "127.0.0.1:5432:5432"
-    user: "1000:1000"
