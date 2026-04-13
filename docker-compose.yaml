@@ -9,7 +9,6 @@ services:
     volumes:
       - ${PROJECT_ROOT}/out/pgdata:/var/lib/postgresql
     user: "1000:1000"
-    restart: unless-stopped
 
   todoapp-postgres-migrate:
     image: migrate/migrate:v4.19.1

@@ -29,7 +29,7 @@ env-cleanup:
 
 migrate-create:
 	@if [ -z "$(seq)" ]; then \
-		echo "Переменная seq не определена, например: make migrate-create seq=init"; \
+		echo "Переменная seq не опреде-runлена, например: make migrate-create seq=init"; \
 		exit 1; \
 	fi; \
 	docker-compose --env-file .env run --rm todoapp-postgres-migrate \
