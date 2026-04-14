@@ -1,12 +1,12 @@
-# Загружаем .env файл
+
 include .env
 export
 
-# Динамический PROJECT_ROOT
+
 PROJECT_ROOT := $(shell pwd)
 export PROJECT_ROOT
 
-# Общая переменная для подключения к БД
+
 DB_URL := postgres://$(POSTGRES_USER):$(POSTGRES_PASSWORD)@todoapp-postgres:5432/$(POSTGRES_DB)?sslmode=disable
 
 env-up:
