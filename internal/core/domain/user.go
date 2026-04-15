@@ -51,10 +51,5 @@ func (u *User) Validate() error {
 			return fmt.Errorf("invalid `PhoneNumber` format: %s:%w", *u.PhoneNumber, core_errors.ErrInvalidArgument)
 		}
 	}
-
-	
-
- 
-
 	return nil
 }
