@@ -85,3 +85,7 @@ func (h *HTTPResponseHandler) JSONResponse(
 		h.log.Error("failed to write response", zap.Error(err))
 	}
 }
+
+func (h *HTTPResponseHandler) NoContentResponse() {
+	h.rw.WriteHeader(http.StatusNoContent)
+}
