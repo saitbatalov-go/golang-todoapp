@@ -32,13 +32,12 @@ func main() {
 	defer logger.Close()
 
 	logger.Debug("initializing database connection pool")
-	pool, err := core_postgres_pool.NewConnectiionPool(
+	pool, err := core_postgres_pool.NewConnectionPool(
 		ctx,
 		core_postgres_pool.NewConfigMust(),
 	)
 	if err != nil {
-		logger.Error("failed to create connection pool", zap.Error(err))
-		os.Exit(1)
+		logger.Fatal("failed to create connection pool", zap.Error(err))
 	}
 	defer pool.Close()
 

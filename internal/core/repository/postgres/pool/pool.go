@@ -12,7 +12,7 @@ import (
 
 type Pool interface {
 	Query(ctx context.Context, sql string, args ...any) (pgx.Rows, error)
-	QueryRow (ctx context.Context, sql string, args ...any) pgx.Row
+	QueryRow(ctx context.Context, sql string, args ...any) pgx.Row
 	Exec(ctx context.Context, sql string, arguments ...any) (pgconn.CommandTag, error)
 	Close()
 
@@ -24,12 +24,12 @@ type ConnectionPool struct {
 	opTimeoute time.Duration
 }
 
-func NewConnectiionPool(
+func NewConnectionPool(
 	ctx context.Context,
 	config Config,
 ) (*ConnectionPool, error) {
 	connectionString := fmt.Sprintf(
-		"postgres://%s:%s@%s:%s/%s",
+		"postgres://%s:%s@%s:%s/%s?sslmode=disable",
 		config.User,
 		config.Password,
 		config.Host,
