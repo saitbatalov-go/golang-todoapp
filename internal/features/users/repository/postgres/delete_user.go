@@ -2,10 +2,9 @@ package user_postgres_repository
 
 import (
 	"context"
-	"errors"
+
 	"fmt"
 
-	"github.com/jackc/pgx/v5"
 	core_errors "github.com/saitbatalov-go/golang-todoapp/internal/core/errors"
 )
 
