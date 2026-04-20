@@ -1,9 +1,19 @@
+package user_postgres_repository
 
+import (
+	"context"
+	"errors"
+	"fmt"
 
-func (r *UsersRepository) PatchUser(
+	"github.com/jackc/pgx/v5"
+	"github.com/saitbatalov-go/golang-todoapp/internal/core/domain"
+	core_errors "github.com/saitbatalov-go/golang-todoapp/internal/core/errors"
+)
+
+func (r *UsersRespository) PatchUser(
 	ctx context.Context,
 	id int,
-	user domain.UserPatch,
+	user domain.User,
 ) (domain.User, error) {
 
 	ctx, cancel := context.WithTimeout(ctx, r.pool.OpTimeout())
@@ -11,7 +21,10 @@ func (r *UsersRepository) PatchUser(
 
 	query := `
 		UPDATE todoapp.users
-		SET full_name = $1, phone_number = $2, version = version + 1
+		SET 
+			full_name = $1,
+			phone_number = $2,
+			version = version + 1
 		WHERE id = $3 AND version = $4
 		RETURNING id, version, full_name, phone_number
 	`
@@ -21,7 +34,8 @@ func (r *UsersRepository) PatchUser(
 		query,
 		user.FullName,
 		user.PhoneNumber,
-		id, user.Version,
+		id,
+		user.Version,
 	)
 
 	var userModel UserModel
@@ -31,6 +45,7 @@ func (r *UsersRepository) PatchUser(
 		&userModel.FullName,
 		&userModel.PhoneNumber,
 	); err != nil {
+		// if user by id not found and version not match (changed by another user)
 		if errors.Is(err, pgx.ErrNoRows) {
 			return domain.User{}, fmt.Errorf(
 				"user with id: %d concurrency accessed: %w",

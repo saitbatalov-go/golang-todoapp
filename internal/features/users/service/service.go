@@ -22,7 +22,7 @@ type UsersRepository interface {
 	PatchUser(
 		ctx context.Context,
 		id int,
-		user domain.UserPatch,
+		user domain.User,
 	) (domain.User, error)
 }
 
