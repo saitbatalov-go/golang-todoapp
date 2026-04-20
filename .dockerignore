@@ -1,0 +1,6 @@
+cat > .dockerignore << 'EOF'
+out/
+*.log
+.git/
+*.md
+EOF

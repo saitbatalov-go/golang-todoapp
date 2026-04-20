@@ -1,12 +1,12 @@
-# Загружаем .env файл
+
 include .env
 export
 
-# Динамический PROJECT_ROOT
+
 PROJECT_ROOT := $(shell pwd)
 export PROJECT_ROOT
 
-# Общая переменная для подключения к БД
+
 DB_URL := postgres://$(POSTGRES_USER):$(POSTGRES_PASSWORD)@todoapp-postgres:5432/$(POSTGRES_DB)?sslmode=disable
 
 env-up:
@@ -20,8 +20,7 @@ env-down:
 env-cleanup:
 	@read -p "Очистить все volume окружения? Опасно потеря данных? [y/N] " ans; \
 	if [ "$$ans" = "y" ]; then \
-		docker compose stop todoapp-postgres && \
-		docker compose rm -f todoapp-postgres && \
+		docker compose stop todoapp-postgres port-forwarder && \
 		sudo rm -rf out/pgdata && \
 		echo "Файлы окружения очищены"; \
 	else \
@@ -30,7 +29,7 @@ env-cleanup:
 
 migrate-create:
 	@if [ -z "$(seq)" ]; then \
-		echo "Переменная seq не определена, например: make migrate-create seq=init"; \
+		echo "Переменная seq не опреде-runлена, например: make migrate-create seq=init"; \
 		exit 1; \
 	fi; \
 	docker-compose --env-file .env run --rm todoapp-postgres-migrate \
@@ -72,3 +71,9 @@ env-port-forward:
 
 env-port-close:
 	@docker compose down port-forwarder 
+
+todoapp-run:
+	@export LOGGER_FOLDER=$(PROJECT_ROOT)/out/logs && \
+	export POSTGRES_HOST=localhost && \
+	go mod tidy && \
+	go run cmd/todoapp/main.go
