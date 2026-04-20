@@ -18,6 +18,12 @@ type UsersRepository interface {
 		id int,
 	) (domain.User, error)
 	DeleteUser(ctx context.Context, id int) error
+
+	PatchUser(
+		ctx context.Context,
+		id int,
+		user domain.UserPatch,
+	) (domain.User, error)
 }
 
 func NewUsersService(usersRepository UsersRepository) *UsersService {
