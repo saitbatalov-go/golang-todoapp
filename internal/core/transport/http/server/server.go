@@ -21,9 +21,9 @@ type HTTPServer struct {
 
 func NewHTTPServer(
 	config Config,
-	 log *core_logger.Logger,
-	  middleware ...core_http_middleware.Middleware,
-	  ) *HTTPServer {
+	log *core_logger.Logger,
+	middleware ...core_http_middleware.Middleware,
+) *HTTPServer {
 	return &HTTPServer{
 		mux:        http.NewServeMux(),
 		config:     config,
@@ -38,7 +38,7 @@ func (s *HTTPServer) RegisterAPIRouters(routers ...*APIVersionRouter) {
 
 		s.mux.Handle(
 			prefix+"/",
-			http.StripPrefix(prefix, router),
+			http.StripPrefix(prefix, router.WithMiddleware()),
 		)
 
 	}
