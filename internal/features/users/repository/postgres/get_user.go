@@ -4,10 +4,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
-
-	"github.com/jackc/pgx/v5"
 	"github.com/saitbatalov-go/golang-todoapp/internal/core/domain"
 	core_errors "github.com/saitbatalov-go/golang-todoapp/internal/core/errors"
+	core_postgres_pool "github.com/saitbatalov-go/golang-todoapp/internal/core/repository/postgres/pool"
 )
 
 func (r *UsersRespository) GetUser(ctx context.Context, id int) (domain.User, error) {
@@ -27,7 +26,7 @@ func (r *UsersRespository) GetUser(ctx context.Context, id int) (domain.User, er
 	
 	if err != nil {
 
-		if errors.Is(err, pgx.ErrNoRows){
+		if errors.Is(err, core_postgres_pool.ErrNoRows){
 			return domain.User{}, fmt.Errorf(
 				"user not found with id: %d: %w",
 			id,

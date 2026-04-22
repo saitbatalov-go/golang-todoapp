@@ -5,9 +5,9 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/jackc/pgx/v5"
 	"github.com/saitbatalov-go/golang-todoapp/internal/core/domain"
 	core_errors "github.com/saitbatalov-go/golang-todoapp/internal/core/errors"
+	core_postgres_pool "github.com/saitbatalov-go/golang-todoapp/internal/core/repository/postgres/pool"
 )
 
 func (r *UsersRespository) PatchUser(
@@ -46,7 +46,7 @@ func (r *UsersRespository) PatchUser(
 		&userModel.PhoneNumber,
 	); err != nil {
 		// if user by id not found and version not match (changed by another user)
-		if errors.Is(err, pgx.ErrNoRows) {
+		if errors.Is(err, core_postgres_pool.ErrNoRows) {
 			return domain.User{}, fmt.Errorf(
 				"user with id: %d concurrency accessed: %w",
 				err,

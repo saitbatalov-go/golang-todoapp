@@ -8,7 +8,7 @@ import (
 	"syscall"
 
 	core_logger "github.com/saitbatalov-go/golang-todoapp/internal/core/logger"
-	core_postgres_pool "github.com/saitbatalov-go/golang-todoapp/internal/core/repository/postgres/pool"
+	core_pgx_pool "github.com/saitbatalov-go/golang-todoapp/internal/core/repository/postgres/pool/pgx"
 	core_http_middleware "github.com/saitbatalov-go/golang-todoapp/internal/core/transport/http/middleware"
 	core_transport_server "github.com/saitbatalov-go/golang-todoapp/internal/core/transport/http/server"
 	user_postgres_repository "github.com/saitbatalov-go/golang-todoapp/internal/features/users/repository/postgres"
@@ -32,9 +32,9 @@ func main() {
 	defer logger.Close()
 
 	logger.Debug("initializing database connection pool")
-	pool, err := core_postgres_pool.NewConnectionPool(
+	pool, err := core_pgx_pool.NewConnectionPool(
 		ctx,
-		core_postgres_pool.NewConfigMust(),
+		core_pgx_pool.NewConfigMust(),
 	)
 	if err != nil {
 		logger.Fatal("failed to create connection pool", zap.Error(err))
