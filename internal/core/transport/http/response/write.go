@@ -11,7 +11,7 @@ type ResponseWrite struct {
 	statusCode int
 }
 
-func NewResponseWriter(w http.ResponseWriter)*ResponseWrite {
+func NewResponseWriter(w http.ResponseWriter) *ResponseWrite {
 	return &ResponseWrite{
 		ResponseWriter: w,
 		statusCode:     StatusCodeUninitialized,
@@ -21,11 +21,11 @@ func NewResponseWriter(w http.ResponseWriter)*ResponseWrite {
 func (rw *ResponseWrite) WriteHeader(statusCode int) {
 	rw.statusCode = statusCode
 	rw.ResponseWriter.WriteHeader(statusCode)
-} 
+}
 
-func (rw *ResponseWrite) GetStatusCodeOrPanic() int {
+func (rw *ResponseWrite) GetStatusCode() int {
 	if rw.statusCode == StatusCodeUninitialized {
-		panic("no status code set")
+		return http.StatusOK
 	}
 
 	return rw.statusCode

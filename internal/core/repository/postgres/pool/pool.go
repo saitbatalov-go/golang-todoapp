@@ -19,41 +19,6 @@ type Pool interface {
 	OpTimeout() time.Duration
 }
 
-type ConnectionPool struct {
-	*pgxpool.Pool
-	opTimeoute time.Duration
-}
-
-func NewConnectionPool(
-	ctx context.Context,
-	config Config,
-) (*ConnectionPool, error) {
-	connectionString := fmt.Sprintf(
-		"postgres://%s:%s@%s:%s/%s?sslmode=disable",
-		config.User,
-		config.Password,
-		config.Host,
-		config.Port,
-		config.Database,
-	)
-
-	pgxConfig, err := pgxpool.ParseConfig(connectionString)
-	if err != nil {
-		return nil, fmt.Errorf("parse connection string: %w", err)
-	}
-
-	pool, err := pgxpool.NewWithConfig(ctx, pgxConfig)
-	if err != nil {
-		return nil, fmt.Errorf("create connection pool: %w", err)
-	}
-
-	if err := pool.Ping(ctx); err != nil {
-		return nil, fmt.Errorf("ping connection pool: %w", err)
-	}
-
-	return &ConnectionPool{Pool: pool, opTimeoute: config.Timeout}, nil
-}
-
-func (p *ConnectionPool) OpTimeout() time.Duration {
-	return p.opTimeoute
+type Row interface {
+	Scan(dest ...any) error
 }
