@@ -11,7 +11,6 @@ import (
 	core_http_request "github.com/saitbatalov-go/golang-todoapp/internal/core/transport/http/request"
 	core_http_response "github.com/saitbatalov-go/golang-todoapp/internal/core/transport/http/response"
 	core_http_types "github.com/saitbatalov-go/golang-todoapp/internal/core/transport/http/types"
-	core_http_utils "github.com/saitbatalov-go/golang-todoapp/internal/core/transport/http/utils"
 )
 
 type PatchUserRequest struct {
@@ -39,13 +38,13 @@ func (r PatchUserRequest) Validate() error {
 
 	if r.PhoneNumber.Set {
 		if r.PhoneNumber.Value != nil {
-	
+
 			phoneNumberLength := len([]rune(*r.PhoneNumber.Value))
 			if phoneNumberLength < 10 || phoneNumberLength > 15 {
 				return fmt.Errorf("invalid `PhoneNumber` must be between 10 and 15: %d:%w", phoneNumberLength, core_errors.ErrInvalidArgument)
 			}
 
-			if !strings.HasPrefix(*r.PhoneNumber.Value, "+"){
+			if !strings.HasPrefix(*r.PhoneNumber.Value, "+") {
 				return fmt.Errorf("invalid `PhoneNumber` must start with +: %s:%w", *r.PhoneNumber.Value, core_errors.ErrInvalidArgument)
 			}
 		}
@@ -67,7 +66,7 @@ func (h *UserHTTPHandler) PatchUser(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userID, err := core_http_utils.GetIntPathValues(r, "id")
+	userID, err := core_http_request.GetIntPathValues(r, "id")
 	if err != nil {
 		responseHandler.ErrorResponse(err, "failed to get 'id' path params")
 		return
@@ -88,8 +87,5 @@ func (h *UserHTTPHandler) PatchUser(rw http.ResponseWriter, r *http.Request) {
 }
 
 func userPatchFromRequest(request PatchUserRequest) domain.UserPatch {
-	return domain.UserPatch{
-		FullName:    request.FullName.ToDomain(),
-		PhoneNumber: request.PhoneNumber.ToDomain(),
-	}
+	return domain.NewUserPatch(request.FullName.ToDomain(), request.PhoneNumber.ToDomain())
 }

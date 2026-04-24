@@ -56,9 +56,21 @@ func main() {
 		core_http_middleware.Panic(),
 	)
 
-	apiVersionRouter := core_transport_server.NewAPIVersionRouter(core_transport_server.ApiVersionV1)
-	apiVersionRouter.RegisterRoutes(usersTransportHTTP.Routes()...)
-	httpServer.RegisterAPIRouters(apiVersionRouter)
+	apiVersionRouterV1 := core_transport_server.NewAPIVersionRouter(core_transport_server.ApiVersionV1)
+	apiVersionRouterV1.RegisterRoutes(usersTransportHTTP.Routes()...)
+
+	// apiVersionRouterV2 := core_transport_server.NewAPIVersionRouter(
+	// 	core_transport_server.ApiVersionV2,
+
+	// 	core_http_middleware.Dummy("api v2 middleware"),
+	
+	// )
+	// apiVersionRouterV2.RegisterRoutes(usersTransportHTTP.Routes()...)
+
+	httpServer.RegisterAPIRouters(
+		apiVersionRouterV1,
+		// apiVersionRouterV2,
+	)
 
 	if err := httpServer.Run(ctx); err != nil {
 		logger.Error("failed to run HTTP server", zap.Error(err))

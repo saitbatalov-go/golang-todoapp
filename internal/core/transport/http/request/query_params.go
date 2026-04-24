@@ -1,4 +1,4 @@
-package core_http_utils
+package core_http_request
 
 import (
 	"fmt"
@@ -29,18 +29,18 @@ func GetIntQueryParams(r *http.Request, key string) (*int, error) {
 }
 
 func GetIntPathParams(r *http.Request, key string) (*int, error) {
-    // Для пути "/users/2" достаём последний сегмент
-    parts := strings.Split(strings.Trim(r.URL.Path, "/"), "/")
-    if len(parts) == 0 {
-        return nil, nil
-    }
-    
-    // Берём последнюю часть
-    param := parts[len(parts)-1]
-    
-    val, err := strconv.Atoi(param)
-    if err != nil {
-        return nil, fmt.Errorf("param='%s' not a valid integer: %w", param, err)
-    }
-    return &val, nil
+	// Для пути "/users/2" достаём последний сегмент
+	parts := strings.Split(strings.Trim(r.URL.Path, "/"), "/")
+	if len(parts) == 0 {
+		return nil, nil
+	}
+
+	// Берём последнюю часть
+	param := parts[len(parts)-1]
+
+	val, err := strconv.Atoi(param)
+	if err != nil {
+		return nil, fmt.Errorf("param='%s' not a valid integer: %w", param, err)
+	}
+	return &val, nil
 }
