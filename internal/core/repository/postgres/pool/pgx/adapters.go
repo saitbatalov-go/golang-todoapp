@@ -8,7 +8,6 @@ import (
 	core_postgres_pool "github.com/saitbatalov-go/golang-todoapp/internal/core/repository/postgres/pool"
 )
 
-
 type pgxRows struct {
 	pgx.Rows
 }
@@ -18,13 +17,25 @@ type pgxRow struct {
 }
 
 func (r pgxRow) Scan(dest ...any) error {
-	err:=r.Row.Scan(dest...)
+	const (
+		pgxViolatesForeignKeyErrorCode = "23503"
+	)
+
+	err := r.Row.Scan(dest...)
 
 	if err != nil {
 
-		if errors.Is(err, pgx.ErrNoRows){
+		if errors.Is(err, pgx.ErrNoRows) {
 			return core_postgres_pool.ErrNoRows
 		}
+
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) {
+			if pgErr.Code == pgxViolatesForeignKeyErrorCode {
+				return core_postgres_pool.ErrViolatesForeignKey
+			}
+		}
+
 		return err
 	}
 
