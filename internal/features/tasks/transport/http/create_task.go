@@ -63,16 +63,3 @@ func (h *TasksHTTPHandler) CreateTask(rw http.ResponseWriter, r *http.Request) {
 
 
 }
-
-func taskDTOFromDomain(task domain.Task) CreateTaskResponse {
-	return CreateTaskResponse{
-		task.ID,
-		task.Version,
-		task.Title,
-		task.Description,
-		task.Completed,
-		task.CreatedAt,
-		task.CompletedAt,
-		task.AuthorUserID,
-	}
-}
