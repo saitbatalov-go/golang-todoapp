@@ -1,7 +1,8 @@
-package tasks_transport
+package tasks_transport_http
 
 import (
 	"context"
+	"net/http"
 
 	"github.com/saitbatalov-go/golang-todoapp/internal/core/domain"
 	core_transport_server "github.com/saitbatalov-go/golang-todoapp/internal/core/transport/http/server"
@@ -13,6 +14,7 @@ type TasksHTTPHandler struct {
 
 type TasksService interface {
 	CreateTask(ctx context.Context, task domain.Task) (domain.Task, error)
+	GetTasks(ctx context.Context, limit, offset *int) ([]domain.Task, error)
 }
 
 func NewTasksHTTPHandler(tasksService TasksService) *TasksHTTPHandler {
@@ -22,5 +24,9 @@ func NewTasksHTTPHandler(tasksService TasksService) *TasksHTTPHandler {
 }
 
 func (h *TasksHTTPHandler) Routes() []core_transport_server.Route {
-	return []core_transport_server.Route{}
+	return []core_transport_server.Route{{
+		Method:  http.MethodPost,
+		Path:    "/tasks",
+		Handler: h.CreateTask,
+	}}
 }

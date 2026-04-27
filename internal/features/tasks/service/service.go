@@ -14,8 +14,8 @@ type TasksRepository interface {
 	CreateTask(ctx context.Context, task domain.Task) (domain.Task, error)
 }
 
-func NewTasksService(tasksRepository TasksRepository) TasksService {
-	return TasksService{
+func NewTasksService(tasksRepository TasksRepository) *TasksService {
+	return &TasksService{
 		tasksRepository: tasksRepository,
 	}
 }

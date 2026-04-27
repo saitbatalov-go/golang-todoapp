@@ -2,9 +2,12 @@ package tasks_postgres_repository
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/saitbatalov-go/golang-todoapp/internal/core/domain"
+	core_errors "github.com/saitbatalov-go/golang-todoapp/internal/core/errors"
+	core_postgres_pool "github.com/saitbatalov-go/golang-todoapp/internal/core/repository/postgres/pool"
 )
 
 func (r *TasksRepository) CreateTask(ctx context.Context, task domain.Task) (domain.Task, error) {
@@ -17,7 +20,7 @@ func (r *TasksRepository) CreateTask(ctx context.Context, task domain.Task) (dom
 		RETURNING id, version, title, description, completed, created_at, completed_at, author_user_id
 	`
 	row := r.pool.QueryRow(ctx, query, task.Title, task.Description, task.Completed, task.CreatedAt, task.CompletedAt, task.AuthorUserID)
-	
+
 	var taskModel TaskModel
 	if err := row.Scan(
 		&taskModel.ID,
@@ -29,6 +32,16 @@ func (r *TasksRepository) CreateTask(ctx context.Context, task domain.Task) (dom
 		&taskModel.CompletedAt,
 		&taskModel.AuthorUserID,
 	); err != nil {
+
+		if errors.Is(err, core_postgres_pool.ErrViolatesForeignKey) {
+			return domain.Task{}, fmt.Errorf(
+				"%v:user with id='%d' not found: %w",
+				err,
+				task.AuthorUserID,
+				core_errors.ErrNotFound,
+			)
+		}
+
 		return domain.Task{}, fmt.Errorf("scan create task model: %w", err)
 	}
 

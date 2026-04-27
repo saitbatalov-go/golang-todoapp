@@ -1,7 +1,6 @@
-package tasks_transport
+package tasks_transport_http
 
 import (
-	"encoding/json"
 	"net/http"
 	"time"
 
