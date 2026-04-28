@@ -8,13 +8,13 @@ import (
 )
 
 type Task struct {
-	ID      int
-	Version int
-	Title       string
-	Description *string
-	Completed   bool
-	CreatedAt   time.Time
-	CompletedAt *time.Time
+	ID           int
+	Version      int
+	Title        string
+	Description  *string
+	Completed    bool
+	CreatedAt    time.Time
+	CompletedAt  *time.Time
 	AuthorUserID int
 }
 
@@ -40,21 +40,47 @@ func NewTask(
 	}
 }
 
+type TaskPatch struct {
+	Title       Nullable[string]
+	Description Nullable[string]
+}
+
+func NewTaskPatch(
+	title Nullable[string],
+	description Nullable[string],
+) TaskPatch {
+	return TaskPatch{
+		Title:       title,
+		Description: description,
+	}
+}
+
+func (t *TaskPatch) Validate() error {
+
+	if t.Title.Set && t.Title.Value == nil {
+		return fmt.Errorf(
+			"PATCH invalid `Title` can't be value null: %w",
+			core_errors.ErrInvalidArgument,
+		)
+	}
+	return nil
+}
+
 func NewTaskUninitialized(
 	title string,
 	description *string,
 	authorUserID int,
 ) Task {
-	return Task{
+	return NewTask(
 		UninitializedID,
 		UninitializedVersion,
 		title,
 		description,
 		false,
-		time.Now(),
 		nil,
+		time.Now(),
 		authorUserID,
-	}
+	)
 }
 
 func (t *Task) Validate() error {
@@ -71,18 +97,24 @@ func (t *Task) Validate() error {
 		}
 	}
 
-	if t.Completed {
-		if t.CompletedAt == nil {
-			return fmt.Errorf("invalid `CompletedAt` can't be null: %w", core_errors.ErrInvalidArgument)
-		}
+	return nil
+}
 
-		if t.CompletedAt.Before(*t.CompletedAt) {
-			return fmt.Errorf("invalid `CompletedAt` can't be before `CreatedAt`: %w", core_errors.ErrInvalidArgument)
-		}
-	} else {
-		if t.CompletedAt != nil {
-			return fmt.Errorf("invalid `CompletedAt` must be `nil  if `Completed` == `false`: %w", core_errors.ErrInvalidArgument)
-		}
+func (t *Task) ApplyPatch(patch TaskPatch) error {
+	if err := patch.Validate(); err != nil {
+		return fmt.Errorf("validate task patch: %w", err)
 	}
+
+	if patch.Title.Set {
+		t.Title = *patch.Title.Value
+	}
+	if patch.Description.Set {
+		t.Description = patch.Description.Value // напрямую копируем указатель
+	}
+
+	if err := t.Validate(); err != nil {
+		return fmt.Errorf("validate patched task: %w", err)
+	}
+
 	return nil
 }
