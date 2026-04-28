@@ -1,0 +1,59 @@
+package tasks_postgres_repository
+
+import (
+	"context"
+	"errors"
+	"fmt"
+
+	"github.com/saitbatalov-go/golang-todoapp/internal/core/domain"
+	core_errors "github.com/saitbatalov-go/golang-todoapp/internal/core/errors"
+	core_postgres_pool "github.com/saitbatalov-go/golang-todoapp/internal/core/repository/postgres/pool"
+)
+
+
+func (s *TasksRepository) GetTask(ctx context.Context, id int) (domain.Task, error) {
+	ctx, cancel := context.WithTimeout(ctx, s.pool.OpTimeout())
+	defer cancel()
+
+	query := `
+		SELECT id, version, title, description, completed, created_at, completed_at, author_user_id
+		FROM todoapp.tasks
+		WHERE id = $1
+	`
+	row := s.pool.QueryRow(ctx, query, id)
+
+	var taskModel TaskModel
+	if err := row.Scan(
+		&taskModel.ID,
+		&taskModel.Version,
+		&taskModel.Title,
+		&taskModel.Description,
+		&taskModel.Completed,
+		&taskModel.CreatedAt,
+		&taskModel.CompletedAt,
+		&taskModel.AuthorUserID,
+	); err != nil {
+		if errors.Is(err, core_postgres_pool.ErrNoRows) {
+			return domain.Task{}, fmt.Errorf(
+				"%v:task with id='%d' not found: %w",
+				err,
+				id,
+				core_errors.ErrNotFound,
+			)
+		}
+		return domain.Task{}, fmt.Errorf("get task: %w", err)
+	}
+
+	taskDomain := domain.NewTask(
+		taskModel.ID,
+		taskModel.Version,
+		taskModel.Title,
+		taskModel.Description,
+		taskModel.Completed,
+		taskModel.CompletedAt,
+		taskModel.CreatedAt,
+		taskModel.AuthorUserID,
+	)
+
+	return taskDomain, nil
+}
