@@ -20,11 +20,9 @@ func (r *TasksRepository) PatchTask(ctx context.Context, taskID int, task domain
 			title = $1,
 			description = $2,
 			completed = $3,
-			created_at = $4,
-			completed_at = $5,
-			author_user_id = $6,
+			completed_at = $4,
 			version = version + 1
-		WHERE id = $7 AND version = $8
+		WHERE id = $5 AND version = $6
 		RETURNING id, version, title, description, completed, created_at, completed_at, author_user_id
 	`
 	row := r.pool.QueryRow(
@@ -33,9 +31,7 @@ func (r *TasksRepository) PatchTask(ctx context.Context, taskID int, task domain
 		task.Title,
 		task.Description,
 		task.Completed,
-		task.CreatedAt,
 		task.CompletedAt,
-		task.AuthorUserID,
 		taskID,
 		task.Version,
 	)
@@ -53,23 +49,14 @@ func (r *TasksRepository) PatchTask(ctx context.Context, taskID int, task domain
 	); err != nil {
 		if errors.Is(err, core_postgres_pool.ErrNoRows) {
 			return domain.Task{}, fmt.Errorf(
-				"%v:task with id='%d' not found: %w",
+				"%v:task with id='%d' concurrenly accessed: %w",
 				err,
 				taskID,
-				core_errors.ErrNotFound,
+				core_errors.ErrConflict,
 			)
 		}
 		return domain.Task{}, fmt.Errorf("patch task: %w", err)
 	}
-	taskDomain := domain.NewTask(
-		taskModel.ID,
-		taskModel.Version,
-		taskModel.Title,
-		taskModel.Description,
-		taskModel.Completed,
-		taskModel.CompletedAt,
-		taskModel.CreatedAt,
-		taskModel.AuthorUserID,
-	)
+	taskDomain := taskDomainFromModel(taskModel)
 	return taskDomain, nil
 }

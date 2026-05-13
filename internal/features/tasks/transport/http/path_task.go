@@ -15,6 +15,7 @@ import (
 type PatchTaskRequest struct {
 	Title core_http_types.Nullable[string] `json:"title"`
 	Description core_http_types.Nullable[string] `json:"description"`
+	Completed core_http_types.Nullable[bool] `json:"completed"`
 }
 
 func (r *PatchTaskRequest) Validate() error {
@@ -35,14 +36,24 @@ func (r *PatchTaskRequest) Validate() error {
 
 	}
 
-	if r.Description.Set {
-		if r.Description.Value != nil {
+    if r.Description.Set {
+ 
+        if r.Description.Value != nil {
+            descriptionLength := len([]rune(*r.Description.Value))
+          
+            if descriptionLength > 1000 { 
+                return fmt.Errorf("invalid `Description` must be max 1000: %d:%w", descriptionLength, core_errors.ErrInvalidArgument)
+            }
+        }
+    }
 
-			descriptionLength := len([]rune(*r.Description.Value))
-			if descriptionLength < 3 || descriptionLength > 1000 {
-				return fmt.Errorf("invalid `Description` must be between 3 and 1000: %d:%w", descriptionLength, core_errors.ErrInvalidArgument)
-			}
 
+	if r.Completed.Set {
+		if r.Completed.Value == nil {
+			return fmt.Errorf(
+				"PATCH invalid `Completed` can't be value null: %w",
+				core_errors.ErrInvalidArgument,
+			)
 		}
 	}
 
@@ -87,5 +98,6 @@ func taskPatchFromRequest(request PatchTaskRequest) domain.TaskPatch {
 	return domain.NewTaskPatch(
 		request.Title.ToDomain(),
 		request.Description.ToDomain(),
+		request.Completed.ToDomain(),
 	)
 }

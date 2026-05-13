@@ -7,19 +7,29 @@ import (
 	"github.com/saitbatalov-go/golang-todoapp/internal/core/domain"
 )
 
-
-func (r *TasksRepository) GetTasks(ctx context.Context, limit, offset *int) ([]domain.Task, error) {
+func (r *TasksRepository) GetTasks(ctx context.Context, userID, limit, offset *int) ([]domain.Task, error) {
 	ctx, cancel := context.WithTimeout(ctx, r.pool.OpTimeout())
 	defer cancel()
 
 	query := `
 		SELECT id, version, title, description, completed, created_at, completed_at, author_user_id
 		FROM todoapp.tasks
-		ORDER BY created_at DESC
+		%s
+		ORDER BY id ASC
 		LIMIT $1
 		OFFSET $2
 	`
-	rows, err := r.pool.Query(ctx, query, limit, offset)
+
+	args := []any{limit, offset}
+
+	if userID != nil {
+		query = fmt.Sprintf(query, "WHERE author_user_id = $3")
+		args = append(args, userID)
+	} else {
+		query = fmt.Sprintf(query, "")
+	}
+
+	rows, err := r.pool.Query(ctx, query, args...)
 	if err != nil {
 		return nil, fmt.Errorf("get tasks: %w", err)
 	}

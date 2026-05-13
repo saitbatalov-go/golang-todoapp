@@ -43,15 +43,18 @@ func NewTask(
 type TaskPatch struct {
 	Title       Nullable[string]
 	Description Nullable[string]
+	Completed   Nullable[bool]
 }
 
 func NewTaskPatch(
 	title Nullable[string],
 	description Nullable[string],
+	completed Nullable[bool],
 ) TaskPatch {
 	return TaskPatch{
 		Title:       title,
 		Description: description,
+		Completed:   completed,
 	}
 }
 
@@ -60,6 +63,12 @@ func (t *TaskPatch) Validate() error {
 	if t.Title.Set && t.Title.Value == nil {
 		return fmt.Errorf(
 			"PATCH invalid `Title` can't be value null: %w",
+			core_errors.ErrInvalidArgument,
+		)
+	}
+	if t.Completed.Set && t.Completed.Value == nil {
+		return fmt.Errorf(
+			"PATCH invalid `Completed` can't be value null: %w",
 			core_errors.ErrInvalidArgument,
 		)
 	}
@@ -105,16 +114,30 @@ func (t *Task) ApplyPatch(patch TaskPatch) error {
 		return fmt.Errorf("validate task patch: %w", err)
 	}
 
+	tmp := *t
+
 	if patch.Title.Set {
-		t.Title = *patch.Title.Value
+		tmp.Title = *patch.Title.Value
 	}
 	if patch.Description.Set {
-		t.Description = patch.Description.Value // напрямую копируем указатель
+		tmp.Description = patch.Description.Value
+	}
+	if patch.Completed.Set {
+		tmp.Completed = *patch.Completed.Value
+
+		if tmp.Completed {
+			completedAt := time.Now()
+			tmp.CompletedAt = &completedAt
+		} else {
+			tmp.CompletedAt = nil
+		}
 	}
 
-	if err := t.Validate(); err != nil {
+	if err := tmp.Validate(); err != nil {
 		return fmt.Errorf("validate patched task: %w", err)
 	}
+
+	*t = tmp
 
 	return nil
 }

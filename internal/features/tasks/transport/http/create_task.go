@@ -17,14 +17,8 @@ type CreateTaskRequest struct {
 }
 
 type CreateTaskResponse struct {
-	ID int `json:"id"`
-	Version int `json:"version"`
-	Title string `json:"title"`
-	Description *string `json:"description"`
-	Completed bool `json:"completed"`
-	CreatedAt time.Time `json:"created_at"`
-	CompletedAt *time.Time `json:"completed_at"`
-	AuthorUserID int `json:"author_user_id"`
+	Task TaskDTOResponse
+	Approximate time.Duration
 }
 
 func (h *TasksHTTPHandler) CreateTask(rw http.ResponseWriter, r *http.Request) {
