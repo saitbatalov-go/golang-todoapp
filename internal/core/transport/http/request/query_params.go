@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"time"
 
 	core_errors "github.com/saitbatalov-go/golang-todoapp/internal/core/errors"
 )
@@ -19,6 +20,27 @@ func GetIntQueryParams(r *http.Request, key string) (*int, error) {
 	if err != nil {
 		return nil, fmt.Errorf(
 			"param='%s' by key='%s' not a valid integer:%v:%w ",
+			param,
+			key,
+			err,
+			core_errors.ErrInvalidArgument,
+		)
+	}
+	return &val, nil
+}
+
+func GetTimeQueryParams(r *http.Request, key string) (*time.Time, error) {
+	param := r.URL.Query().Get(key)
+	if param == "" {
+		return nil, nil
+	}
+
+	layout := "2006-01-02"
+
+	val, err := time.Parse(layout, param)
+	if err != nil {
+		return nil, fmt.Errorf(
+			"param='%s' by key='%s' not a valid time:%v:%w ",
 			param,
 			key,
 			err,
