@@ -31,5 +31,10 @@ func NewStatisticsHTTPHandler(statisticsService StatisticsService) *StatisticsHT
 func (h *StatisticsHTTPHandler) Routes() []core_transport_server.Route {
 	return []core_transport_server.Route{
 	
+		{
+			Method:      http.MethodGet,
+			Path:        "/statistics",
+			Handler: h.GetStatistics,
+		},
 	}
 }

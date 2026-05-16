@@ -1,6 +1,10 @@
 package statistics_postgres_repository
 
-import "time"
+import (
+	"time"
+
+	"github.com/saitbatalov-go/golang-todoapp/internal/core/domain"
+)
 
 
 type TaskModel struct {
@@ -12,4 +16,25 @@ type TaskModel struct {
 	CreatedAt   time.Time
 	CompletedAt *time.Time
 	AuthorUserID int
+}
+
+func tasksModelToDomains(tasks []TaskModel) []domain.Task {
+	domains := make([]domain.Task, len(tasks))
+	for i, task := range tasks {
+		domains[i] = taskDomainFromModel(task)
+	}
+	return domains
+}
+
+func taskDomainFromModel(task TaskModel) domain.Task {
+	return domain.NewTask(
+		task.ID,
+		task.Version,
+		task.Title,
+		task.Description,
+		task.Completed,
+		task.CompletedAt,
+		task.CreatedAt,
+		task.AuthorUserID,
+	)
 }

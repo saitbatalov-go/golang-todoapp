@@ -13,6 +13,9 @@ import (
 	core_pgx_pool "github.com/saitbatalov-go/golang-todoapp/internal/core/repository/postgres/pool/pgx"
 	core_http_middleware "github.com/saitbatalov-go/golang-todoapp/internal/core/transport/http/middleware"
 	core_transport_server "github.com/saitbatalov-go/golang-todoapp/internal/core/transport/http/server"
+	statistics_postgres_repository "github.com/saitbatalov-go/golang-todoapp/internal/features/statistics/repository"
+	statistics_service "github.com/saitbatalov-go/golang-todoapp/internal/features/statistics/service"
+	statistics_transport_http "github.com/saitbatalov-go/golang-todoapp/internal/features/statistics/transport/http"
 	tasks_postgres_repository "github.com/saitbatalov-go/golang-todoapp/internal/features/tasks/repository/postgres"
 	tasks_service "github.com/saitbatalov-go/golang-todoapp/internal/features/tasks/service"
 	tasks_transport_http "github.com/saitbatalov-go/golang-todoapp/internal/features/tasks/transport/http"
@@ -62,6 +65,11 @@ func main() {
 	tasksService := tasks_service.NewTasksService(tasksRepository)
 	tasksTransportHTTP := tasks_transport_http.NewTasksHTTPHandler(tasksService)
 
+	logger.Debug("init feature", zap.String("feature", "statistcs"))
+	satisticsRepository:=statistics_postgres_repository.NewStatisticsRepository(pool)
+	statisticsService := statistics_service.NewStatisticsService(satisticsRepository)
+	statisticsTransportHTTP := statistics_transport_http.NewStatisticsHTTPHandler(statisticsService)
+
 	logger.Debug("initializing HTTP server")
 	httpServer := core_transport_server.NewHTTPServer(
 		core_transport_server.NewConfigMust(),
@@ -75,6 +83,7 @@ func main() {
 	apiVersionRouterV1 := core_transport_server.NewAPIVersionRouter(core_transport_server.ApiVersionV1)
 	apiVersionRouterV1.RegisterRoutes(usersTransportHTTP.Routes()...)
 	apiVersionRouterV1.RegisterRoutes(tasksTransportHTTP.Routes()...)
+	apiVersionRouterV1.RegisterRoutes(statisticsTransportHTTP.Routes()...)
 
 	// apiVersionRouterV2 := core_transport_server.NewAPIVersionRouter(
 	// 	core_transport_server.ApiVersionV2,

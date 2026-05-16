@@ -12,10 +12,10 @@ import (
 )
 
 type GetStatisticsResponse struct {
-	TasksCreated               int
-	TasksCompleted             int
-	TasksCompletedRate         *float64
-	TasksAverageCompletionTime *string
+	TasksCreated               int      `json:"tasks_created"`
+	TasksCompleted             int      `json:"tasks_completed"`
+	TasksCompletedRate         *float64 `json:"tasks_completed_rate"`
+	TasksAverageCompletionTime *string  `json:"tasks_average_completion_time"`
 }
 
 func (h *StatisticsHTTPHandler) GetStatistics(rw http.ResponseWriter, r *http.Request) {
