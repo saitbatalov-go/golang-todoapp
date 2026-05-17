@@ -28,20 +28,15 @@ func (s *StatisticsService) GetStatistics(
 	if err != nil {
 		return domain.Statistics{}, fmt.Errorf("get tasks from repository: %w", err)
 	}
-	statistics:= calcStaistics(tasks)
+	statistics := calcStaistics(tasks)
 	return statistics, nil
 
 }
 
 func calcStaistics(tasks []domain.Task) domain.Statistics {
-	
+
 	if len(tasks) == 0 {
-		return domain.Statistics{
-			TasksCreated:       0,
-			TasksCompleted:     0,
-			TasksCompletedRate: nil,
-			TasksAverageCompletionTime: nil,
-		}
+		return domain.NewStatistics(0, 0, nil, nil)
 	}
 
 	tasksCreated := len(tasks)
@@ -54,26 +49,26 @@ func calcStaistics(tasks []domain.Task) domain.Statistics {
 			tasksCompleted++
 		}
 
-		completionDuration:= task.CompletionDuration()
+		completionDuration := task.CompletionDuration()
 
 		if completionDuration != nil {
 			totalCompletedDuration += *completionDuration
 		}
 	}
-	
-	tasksCompletedRate:= float64(tasksCompleted) / float64(tasksCreated) * 100
-	
+
+	tasksCompletedRate := float64(tasksCompleted) / float64(tasksCreated) * 100
+
 	var tasksAverageCompletionTime *time.Duration
 	if tasksCompleted > 0 && totalCompletedDuration != 0 {
-		avg:= totalCompletedDuration / time.Duration(tasksCompleted)
+		avg := totalCompletedDuration / time.Duration(tasksCompleted)
 		tasksAverageCompletionTime = &avg
 	}
-	
-	return domain.Statistics{
-		TasksCreated:       tasksCreated,
-		TasksCompleted:     tasksCompleted,
-		TasksCompletedRate: &tasksCompletedRate,
-		TasksAverageCompletionTime: tasksAverageCompletionTime,
-	}
+
+	return domain.NewStatistics(
+		tasksCreated,
+		tasksCompleted,
+		&tasksCompletedRate,
+		tasksAverageCompletionTime,
+	)
 
 }
