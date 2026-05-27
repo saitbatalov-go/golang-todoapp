@@ -23,8 +23,15 @@ import (
 	users_service "github.com/saitbatalov-go/golang-todoapp/internal/features/users/service"
 	users_transport_http "github.com/saitbatalov-go/golang-todoapp/internal/features/users/transport/http"
 	"go.uber.org/zap"
+
+	_ "github.com/saitbatalov-go/golang-todoapp/docs"
 )
 
+// @title Golang TodoApp
+// @version 1.0
+// @description REST API for Golang TodoApp
+// @host localhost:5050
+// @BasePath /api/v1
 func main() {
 
 	cfg := core_config.NewConfigMust()
@@ -66,7 +73,7 @@ func main() {
 	tasksTransportHTTP := tasks_transport_http.NewTasksHTTPHandler(tasksService)
 
 	logger.Debug("init feature", zap.String("feature", "statistcs"))
-	satisticsRepository:=statistics_postgres_repository.NewStatisticsRepository(pool)
+	satisticsRepository := statistics_postgres_repository.NewStatisticsRepository(pool)
 	statisticsService := statistics_service.NewStatisticsService(satisticsRepository)
 	statisticsTransportHTTP := statistics_transport_http.NewStatisticsHTTPHandler(statisticsService)
 
@@ -97,6 +104,8 @@ func main() {
 		apiVersionRouterV1,
 		// apiVersionRouterV2,
 	)
+
+	httpServer.RegisterSwagger()
 
 	if err := httpServer.Run(ctx); err != nil {
 		logger.Error("failed to run HTTP server", zap.Error(err))
