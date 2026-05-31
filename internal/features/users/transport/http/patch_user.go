@@ -14,8 +14,8 @@ import (
 )
 
 type PatchUserRequest struct {
-	FullName    core_http_types.Nullable[string] `json:"full_name" `
-	PhoneNumber core_http_types.Nullable[string] `json:"phone_number"`
+	FullName    core_http_types.Nullable[string] `json:"full_name" swagggertype:"string" example:"Aza Saitbatalov"`
+	PhoneNumber core_http_types.Nullable[string] `json:"phone_number" swagggertype:"string" example:"+79998887766"`
 }
 
 func (r PatchUserRequest) Validate() error {
@@ -55,6 +55,22 @@ func (r PatchUserRequest) Validate() error {
 
 type PatchUserRespose UserDTOResponse
 
+// PatchUser godoc
+// @Summary     Обновление пользователя
+// @Description Обновление пользователя существующего в системе по ID
+// @Description ### Логика обновления
+// @Description 1. **Поле не передано** - `phone_number` игонируется , занчение в бд не меняется
+// @Description 2. **Поле передано** - `phone_number` обновляется в бд
+// @Description 3. **Поле null**: - `phone_number` очищается в бд (set null)
+// @Description 4. Ограничения - `full_name` не может быть пустым null, длина от 3 до 100 символов
+// @Tags        Users
+// @Produces    json
+// @Param       id path int true "ID пользователя"
+// @Param       request body PatchUserRequest true "Запрос на обновление пользователя"
+// @Success     200 {object} PatchUserRespose
+// @Failure     400 {object} core_http_response.ErrorResponse "Плохой запрос"
+// @Failure     500 {object} core_http_response.ErrorResponse "Внутренняя ошибка сервера"
+// @Router      /users/{id} [patch]
 func (h *UserHTTPHandler) PatchUser(rw http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	log := core_logger.FromLogger(ctx)

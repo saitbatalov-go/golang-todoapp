@@ -1,0 +1,526 @@
+basePath: /api/v1
+definitions:
+  github_com_saitbatalov-go_golang-todoapp_internal_core_transport_http_response.ErrorResponse:
+    properties:
+      error:
+        example: error message
+        type: string
+      message:
+        example: not found
+        type: string
+    type: object
+  github_com_saitbatalov-go_golang-todoapp_internal_core_transport_http_types.Nullable-string:
+    properties:
+      set:
+        type: boolean
+      value:
+        type: string
+    type: object
+  internal_features_statistics_transport_http.GetStatisticsResponse:
+    properties:
+      tasks_average_completion_time:
+        example: "00:00:00"
+        type: string
+      tasks_completed:
+        example: 1
+        type: integer
+      tasks_completed_rate:
+        example: 100
+        type: number
+      tasks_created:
+        example: 1
+        type: integer
+    type: object
+  internal_features_tasks_transport_http.CreateTaskRequest:
+    properties:
+      author_user_id:
+        type: integer
+      description:
+        maxLength: 1000
+        minLength: 1
+        type: string
+      title:
+        maxLength: 100
+        minLength: 1
+        type: string
+    required:
+    - author_user_id
+    - title
+    type: object
+  internal_features_tasks_transport_http.CreateTaskResponse:
+    properties:
+      approximate:
+        $ref: '#/definitions/time.Duration'
+      task:
+        $ref: '#/definitions/internal_features_tasks_transport_http.TaskDTOResponse'
+    type: object
+  internal_features_tasks_transport_http.GetTaskResponse:
+    properties:
+      author_user_id:
+        type: integer
+      completed:
+        type: boolean
+      completed_at:
+        type: string
+      created_at:
+        type: string
+      description:
+        type: string
+      id:
+        type: integer
+      title:
+        type: string
+      version:
+        type: integer
+    type: object
+  internal_features_tasks_transport_http.PatchTaskRequest:
+    type: object
+  internal_features_tasks_transport_http.PatchTaskResponse:
+    properties:
+      author_user_id:
+        type: integer
+      completed:
+        type: boolean
+      completed_at:
+        type: string
+      created_at:
+        type: string
+      description:
+        type: string
+      id:
+        type: integer
+      title:
+        type: string
+      version:
+        type: integer
+    type: object
+  internal_features_tasks_transport_http.TaskDTOResponse:
+    properties:
+      author_user_id:
+        type: integer
+      completed:
+        type: boolean
+      completed_at:
+        type: string
+      created_at:
+        type: string
+      description:
+        type: string
+      id:
+        type: integer
+      title:
+        type: string
+      version:
+        type: integer
+    type: object
+  internal_features_users_transport_http.CreateUserRequest:
+    properties:
+      full_name:
+        example: Aza Saitbatalov
+        maxLength: 100
+        minLength: 3
+        type: string
+      phone_number:
+        example: "+79998887766"
+        maxLength: 15
+        minLength: 10
+        type: string
+    required:
+    - full_name
+    type: object
+  internal_features_users_transport_http.CreateUserResponse:
+    properties:
+      full_name:
+        example: Aza Saitbatalov
+        type: string
+      id:
+        example: 1
+        type: integer
+      phone_number:
+        example: "+79998887766"
+        type: string
+      version:
+        example: 3
+        type: integer
+    type: object
+  internal_features_users_transport_http.GetUserResponse:
+    properties:
+      full_name:
+        example: Aza Saitbatalov
+        type: string
+      id:
+        example: 1
+        type: integer
+      phone_number:
+        example: "+79998887766"
+        type: string
+      version:
+        example: 3
+        type: integer
+    type: object
+  internal_features_users_transport_http.PatchUserRequest:
+    type: object
+  internal_features_users_transport_http.PatchUserRespose:
+    properties:
+      full_name:
+        example: Aza Saitbatalov
+        type: string
+      id:
+        example: 1
+        type: integer
+      phone_number:
+        example: "+79998887766"
+        type: string
+      version:
+        example: 3
+        type: integer
+    type: object
+  internal_features_users_transport_http.UserDTOResponse:
+    properties:
+      full_name:
+        example: Aza Saitbatalov
+        type: string
+      id:
+        example: 1
+        type: integer
+      phone_number:
+        example: "+79998887766"
+        type: string
+      version:
+        example: 3
+        type: integer
+    type: object
+  time.Duration:
+    enum:
+    - -9223372036854775808
+    - 9223372036854775807
+    - 1
+    - 1000
+    - 1000000
+    - 1000000000
+    - 60000000000
+    - 3600000000000
+    format: int64
+    type: integer
+    x-enum-varnames:
+    - minDuration
+    - maxDuration
+    - Nanosecond
+    - Microsecond
+    - Millisecond
+    - Second
+    - Minute
+    - Hour
+host: localhost:5050
+info:
+  contact: {}
+  description: REST API for Golang TodoApp
+  title: Golang TodoApp
+  version: "1.0"
+paths:
+  /statistics:
+    get:
+      parameters:
+      - description: User ID
+        in: query
+        name: user_id
+        type: integer
+      - description: From
+        in: query
+        name: from
+        type: string
+      - description: To
+        in: query
+        name: to
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_features_statistics_transport_http.GetStatisticsResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_saitbatalov-go_golang-todoapp_internal_core_transport_http_response.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_saitbatalov-go_golang-todoapp_internal_core_transport_http_response.ErrorResponse'
+      summary: Get statistics
+      tags:
+      - Statistics
+  /tasks:
+    get:
+      parameters:
+      - description: User ID
+        in: query
+        name: user_id
+        type: integer
+      - description: Limit
+        in: query
+        name: limit
+        type: integer
+      - description: Offset
+        in: query
+        name: offset
+        type: integer
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/internal_features_tasks_transport_http.TaskDTOResponse'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_saitbatalov-go_golang-todoapp_internal_core_transport_http_response.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_saitbatalov-go_golang-todoapp_internal_core_transport_http_response.ErrorResponse'
+      summary: Get tasks
+      tags:
+      - Tasks
+    post:
+      description: Создание задачи
+      parameters:
+      - description: Запрос на создание задачи
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_features_tasks_transport_http.CreateTaskRequest'
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/internal_features_tasks_transport_http.CreateTaskResponse'
+        "400":
+          description: Плохой запрос
+          schema:
+            $ref: '#/definitions/github_com_saitbatalov-go_golang-todoapp_internal_core_transport_http_response.ErrorResponse'
+        "500":
+          description: Внутренняя ошибка сервера
+          schema:
+            $ref: '#/definitions/github_com_saitbatalov-go_golang-todoapp_internal_core_transport_http_response.ErrorResponse'
+      summary: Создание задачи
+      tags:
+      - Tasks
+  /tasks/{id}:
+    delete:
+      parameters:
+      - description: Task ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_saitbatalov-go_golang-todoapp_internal_core_transport_http_response.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_saitbatalov-go_golang-todoapp_internal_core_transport_http_response.ErrorResponse'
+      summary: Delete task
+      tags:
+      - Tasks
+    get:
+      parameters:
+      - description: Task ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_features_tasks_transport_http.GetTaskResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_saitbatalov-go_golang-todoapp_internal_core_transport_http_response.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_saitbatalov-go_golang-todoapp_internal_core_transport_http_response.ErrorResponse'
+      summary: Get task
+      tags:
+      - Tasks
+    patch:
+      parameters:
+      - description: Task ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Request body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_features_tasks_transport_http.PatchTaskRequest'
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_features_tasks_transport_http.PatchTaskResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_saitbatalov-go_golang-todoapp_internal_core_transport_http_response.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_saitbatalov-go_golang-todoapp_internal_core_transport_http_response.ErrorResponse'
+      summary: Update task
+      tags:
+      - Tasks
+  /users:
+    get:
+      description: Получение пользователей существующих в системе
+      parameters:
+      - description: Limit
+        in: query
+        name: limit
+        type: integer
+      - description: Offset
+        in: query
+        name: offset
+        type: integer
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/internal_features_users_transport_http.UserDTOResponse'
+            type: array
+        "400":
+          description: Плохой запрос
+          schema:
+            $ref: '#/definitions/github_com_saitbatalov-go_golang-todoapp_internal_core_transport_http_response.ErrorResponse'
+        "500":
+          description: Внутренняя ошибка сервера
+          schema:
+            $ref: '#/definitions/github_com_saitbatalov-go_golang-todoapp_internal_core_transport_http_response.ErrorResponse'
+      summary: Получение пользователей
+      tags:
+      - Users
+    post:
+      consumes:
+      - application/json
+      description: Создание нового пользователя
+      parameters:
+      - description: CreateUser  тело запроса
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_features_users_transport_http.CreateUserRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Созданный пользователь
+          schema:
+            $ref: '#/definitions/internal_features_users_transport_http.CreateUserResponse'
+        "400":
+          description: Плохой запрос
+          schema:
+            $ref: '#/definitions/github_com_saitbatalov-go_golang-todoapp_internal_core_transport_http_response.ErrorResponse'
+        "500":
+          description: Внутренняя ошибка сервера
+          schema:
+            $ref: '#/definitions/github_com_saitbatalov-go_golang-todoapp_internal_core_transport_http_response.ErrorResponse'
+      summary: Создание пользователя
+      tags:
+      - Users
+  /users/{id}:
+    delete:
+      description: Удаление пользователя существующего в системе по ID
+      parameters:
+      - description: ID пользователя
+        in: path
+        name: id
+        required: true
+        type: integer
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Плохой запрос
+          schema:
+            $ref: '#/definitions/github_com_saitbatalov-go_golang-todoapp_internal_core_transport_http_response.ErrorResponse'
+        "500":
+          description: Внутренняя ошибка сервера
+          schema:
+            $ref: '#/definitions/github_com_saitbatalov-go_golang-todoapp_internal_core_transport_http_response.ErrorResponse'
+      summary: Удаление пользователя
+      tags:
+      - Users
+    get:
+      description: Получение пользователя существующего в системе по ID
+      parameters:
+      - description: ID пользователя
+        in: path
+        name: id
+        required: true
+        type: integer
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_features_users_transport_http.GetUserResponse'
+        "400":
+          description: Плохой запрос
+          schema:
+            $ref: '#/definitions/github_com_saitbatalov-go_golang-todoapp_internal_core_transport_http_response.ErrorResponse'
+        "500":
+          description: Внутренняя ошибка сервера
+          schema:
+            $ref: '#/definitions/github_com_saitbatalov-go_golang-todoapp_internal_core_transport_http_response.ErrorResponse'
+      summary: Получение пользователя
+      tags:
+      - Users
+    patch:
+      description: |-
+        Обновление пользователя существующего в системе по ID
+        ### Логика обновления
+        1. **Поле не передано** - `phone_number` игонируется , занчение в бд не меняется
+        2. **Поле передано** - `phone_number` обновляется в бд
+        3. **Поле null**: - `phone_number` очищается в бд (set null)
+        4. Ограничения - `full_name` не может быть пустым null, длина от 3 до 100 символов
+      parameters:
+      - description: ID пользователя
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Запрос на обновление пользователя
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_features_users_transport_http.PatchUserRequest'
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_features_users_transport_http.PatchUserRespose'
+        "400":
+          description: Плохой запрос
+          schema:
+            $ref: '#/definitions/github_com_saitbatalov-go_golang-todoapp_internal_core_transport_http_response.ErrorResponse'
+        "500":
+          description: Внутренняя ошибка сервера
+          schema:
+            $ref: '#/definitions/github_com_saitbatalov-go_golang-todoapp_internal_core_transport_http_response.ErrorResponse'
+      summary: Обновление пользователя
+      tags:
+      - Users
+swagger: "2.0"

@@ -65,14 +65,13 @@ func (h *HTTPResponseHandler) errorResponse(
 	msg string,
 	err error,
 ) {
-	response := map[string]string{
-		"message": msg,
-		"error":   err.Error(),
+	response := ErrorResponse{
+		Error:   err.Error(),
+		Message: msg,
 	}
 
 	h.JSONResponse(response, statusCode)
 }
-
 
 func (h *HTTPResponseHandler) JSONResponse(
 	responseBody any,

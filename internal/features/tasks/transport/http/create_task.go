@@ -21,6 +21,16 @@ type CreateTaskResponse struct {
 	Approximate time.Duration
 }
 
+// CreateTask godoc
+// @Summary     Создание задачи
+// @Description Создание задачи
+// @Tags        Tasks
+// @Produces    json
+// @Param       request body CreateTaskRequest true "Запрос на создание задачи"
+// @Success     201 {object} CreateTaskResponse
+// @Failure     400 {object} core_http_response.ErrorResponse "Плохой запрос"
+// @Failure     500 {object} core_http_response.ErrorResponse "Внутренняя ошибка сервера"
+// @Router      /tasks [post]
 func (h *TasksHTTPHandler) CreateTask(rw http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	log := core_logger.FromLogger(ctx)

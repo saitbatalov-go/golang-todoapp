@@ -8,9 +8,18 @@ import (
 	core_http_response "github.com/saitbatalov-go/golang-todoapp/internal/core/transport/http/response"
 )
 
-
 type GetUserResponse UserDTOResponse
 
+// GetUser godoc
+// @Summary     Получение пользователя
+// @Description Получение пользователя существующего в системе по ID
+// @Tags        Users
+// @Produces    json
+// @Param       id path int true "ID пользователя"
+// @Success     200 {object} GetUserResponse
+// @Failure     400 {object} core_http_response.ErrorResponse "Плохой запрос"
+// @Failure     500 {object} core_http_response.ErrorResponse "Внутренняя ошибка сервера"
+// @Router      /users/{id} [get]
 func (h *UserHTTPHandler) GetUser(rw http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	log := core_logger.FromLogger(ctx)
@@ -29,10 +38,8 @@ func (h *UserHTTPHandler) GetUser(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	response:= GetUserResponse(userDTOFromDomain(userDomain))
+	response := GetUserResponse(userDTOFromDomain(userDomain))
 
 	responseHandler.JSONResponse(response, http.StatusOK)
 
 }
-
-

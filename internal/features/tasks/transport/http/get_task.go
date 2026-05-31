@@ -10,6 +10,14 @@ import (
 
 type GetTaskResponse TaskDTOResponse
 
+// GetTask gets task
+// @Summary Get task
+// @Tags Tasks
+// @Param id path int true "Task ID"
+// @Success 200 {object} GetTaskResponse
+// @Failure 400 {object} core_http_response.ErrorResponse "Bad Request"
+// @Failure 500 {object} core_http_response.ErrorResponse "Internal Server Error"
+// @Router /tasks/{id} [get]
 func (h *TasksHTTPHandler) GetTask(rw http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	log := core_logger.FromLogger(ctx)
@@ -32,4 +40,3 @@ func (h *TasksHTTPHandler) GetTask(rw http.ResponseWriter, r *http.Request) {
 
 	responseHandler.JSONResponse(response, http.StatusOK)
 }
-
