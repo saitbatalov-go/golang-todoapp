@@ -8,8 +8,14 @@ import (
 	core_http_response "github.com/saitbatalov-go/golang-todoapp/internal/core/transport/http/response"
 )
 
-
-
+// DeleteTask deletes task
+// @Summary Delete task
+// @Tags Tasks
+// @Param id path int true "Task ID"
+// @Success 204
+// @Failure 400 {object} core_http_response.ErrorResponse "Bad Request"
+// @Failure 500 {object} core_http_response.ErrorResponse "Internal Server Error"
+// @Router /tasks/{id} [delete]
 func (h *TasksHTTPHandler) DeleteTask(rw http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	log := core_logger.FromLogger(ctx)

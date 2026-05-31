@@ -13,13 +13,13 @@ import (
 )
 
 type PatchTaskRequest struct {
-	Title core_http_types.Nullable[string] `json:"title"`
-	Description core_http_types.Nullable[string] `json:"description"`
-	Completed core_http_types.Nullable[bool] `json:"completed"`
+	Title       core_http_types.Nullable[string] `json:"title" swagggertype:"string" example:"Task сходить погулять"`
+	Description core_http_types.Nullable[string] `json:"description" swagggertype:"string" example:"Описание задачи"`
+	Completed   core_http_types.Nullable[bool]   `json:"completed" swagggertype:"boolean" example:"true"`
 }
 
 func (r *PatchTaskRequest) Validate() error {
-	
+
 	if r.Title.Set {
 		if r.Title.Value == nil {
 			return fmt.Errorf(
@@ -36,17 +36,16 @@ func (r *PatchTaskRequest) Validate() error {
 
 	}
 
-    if r.Description.Set {
- 
-        if r.Description.Value != nil {
-            descriptionLength := len([]rune(*r.Description.Value))
-          
-            if descriptionLength > 1000 { 
-                return fmt.Errorf("invalid `Description` must be max 1000: %d:%w", descriptionLength, core_errors.ErrInvalidArgument)
-            }
-        }
-    }
+	if r.Description.Set {
 
+		if r.Description.Value != nil {
+			descriptionLength := len([]rune(*r.Description.Value))
+
+			if descriptionLength > 1000 {
+				return fmt.Errorf("invalid `Description` must be max 1000: %d:%w", descriptionLength, core_errors.ErrInvalidArgument)
+			}
+		}
+	}
 
 	if r.Completed.Set {
 		if r.Completed.Value == nil {
@@ -62,6 +61,15 @@ func (r *PatchTaskRequest) Validate() error {
 
 type PatchTaskResponse TaskDTOResponse
 
+// PatchTask updates task
+// @Summary Update task
+// @Tags Tasks
+// @Param id path int true "Task ID"
+// @Param request body PatchTaskRequest true "Request body"
+// @Success 200 {object} PatchTaskResponse
+// @Failure 400 {object} core_http_response.ErrorResponse "Bad Request"
+// @Failure 500 {object} core_http_response.ErrorResponse "Internal Server Error"
+// @Router /tasks/{id} [patch]
 func (h *TasksHTTPHandler) PatchTask(rw http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	log := core_logger.FromLogger(ctx)

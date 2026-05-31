@@ -11,6 +11,17 @@ import (
 
 type GetUsersResponse []UserDTOResponse
 
+// GetUsers godoc
+// @Summary     Получение пользователей
+// @Description Получение пользователей существующих в системе
+// @Tags        Users
+// @Produces    json
+// @Param       limit query int false "Limit"
+// @Param       offset query int false "Offset"
+// @Success     200 {object} GetUsersResponse
+// @Failure     400 {object} core_http_response.ErrorResponse "Плохой запрос"
+// @Failure     500 {object} core_http_response.ErrorResponse "Внутренняя ошибка сервера"
+// @Router      /users [get]
 func (h *UserHTTPHandler) GetUsers(rw http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	log := core_logger.FromLogger(ctx)

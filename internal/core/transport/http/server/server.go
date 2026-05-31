@@ -9,7 +9,7 @@ import (
 	"github.com/saitbatalov-go/golang-todoapp/docs"
 	core_logger "github.com/saitbatalov-go/golang-todoapp/internal/core/logger"
 	core_http_middleware "github.com/saitbatalov-go/golang-todoapp/internal/core/transport/http/middleware"
-	httpSwagger "github.com/swaggo/http-swagger"
+	httpSwagger "github.com/swaggo/http-swagger/v2"
 	"go.uber.org/zap"
 )
 
@@ -51,6 +51,7 @@ func (s *HTTPServer) RegisterSwagger() {
 		"/swagger/",
 		httpSwagger.Handler(
 			httpSwagger.URL("/swagger/doc.json"),
+			httpSwagger.DefaultModelsExpandDepth(-1),
 		))
 	s.mux.HandleFunc(
 		"/swagger/doc.json",
