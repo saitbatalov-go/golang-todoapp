@@ -3,13 +3,14 @@ package web_service
 import (
 	"fmt"
 	"os"
-	"path"
+	"path/filepath"
 )
 
 func (s *WebService) GetMainPage() ([]byte, error) {
-	htmlFilePath := path.Join(
+
+	htmlFilePath := filepath.Join(
 		os.Getenv("PROJECT_ROOT"),
-		"/public/index.html",
+		"public", "index.html",
 	)
 
 	htmlFile, err := s.webRepository.GetFile(htmlFilePath)
