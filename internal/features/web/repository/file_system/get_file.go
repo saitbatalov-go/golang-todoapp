@@ -15,7 +15,7 @@ func (r *WebRepository) GetFile(filePath string) ([]byte, error) {
 
 		if errors.Is(err, os.ErrNotExist) {
 			return nil, fmt.Errorf(
-				"file: $s:%w",
+				"file: %s:%w",
 				filePath,
 				core_errors.ErrNotFound,
 			)
