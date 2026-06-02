@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <title>Golang TodoApp</title>
+</head>
+
+<body>
+    <div>Golang TodoApp</div>
+
+    <button onclick="getUsers()">get users</button>
+
+
+    <ul id="users">
+
+    </ul>
+
+    <script>
+        async function getUsers() {
+            const response = await fetch('http://localhost:5050/api/v1/users')
+            const users = await response.json()
+
+            const list = document.getElementById('users')
+            list.innerHTML = users.map(user => `<li> ${user.id}- ${user.full_name}</li>`).join('')
+        }
+    </script>
+</body>
+
+</html>

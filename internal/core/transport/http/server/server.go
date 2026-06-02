@@ -62,7 +62,18 @@ func (s *HTTPServer) RegisterSwagger() {
 
 		},
 	)
+}
 
+func (s *HTTPServer) RegisterRoutes(routes ...Route) () {
+	for _, route := range routes {
+		pattern := fmt.Sprintf("%s %s", route.Method, route.Path)
+		handler := route.WithMiddleware() 
+
+		s.mux.HandleFunc(pattern, func(w http.ResponseWriter, r *http.Request) {
+
+			handler.ServeHTTP(w, r)
+		})
+	}
 }
 
 func (s *HTTPServer) Run(ctx context.Context) error {

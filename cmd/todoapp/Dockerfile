@@ -14,5 +14,7 @@ FROM alpine:3.23
 WORKDIR /app
 
 COPY --from=builder /app/cmd/todoapp/exe . /app/
+COPY --from=builder /app/public /app/public
+ENV PROJCET_ROOT /app
 
 CMD ["/app/exe"]
