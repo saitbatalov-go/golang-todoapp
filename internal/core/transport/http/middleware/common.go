@@ -1,6 +1,7 @@
 package core_http_middleware
 
 import (
+	"fmt"
 	"net/http"
 	"time"
 
@@ -15,32 +16,56 @@ const (
 )
 
 func CORS(allowedOrigins []string) Middleware {
-	allowedOrigin := make(map[string]struct{}, len(allowedOrigins))
-
-	for _, origin := range allowedOrigins {
-		allowedOrigin[origin] = struct{}{}
-	}
-	return func(next http.Handler) http.Handler {
-		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-
-			origin := r.Header.Get("Origin")
-
-			if _, ok := allowedOrigin[origin]; ok {
-				w.Header().Set("Access-Control-Allow-Origin", origin)
-				w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE, PATCH")
-				w.Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Authorization")
-
-			}
-
-			if r.Method == http.MethodOptions {
-				w.WriteHeader(http.StatusOK)
-				return
-			}
-
-			next.ServeHTTP(w, r)
-
-		})
-	}
+    allowedOrigin := make(map[string]struct{}, len(allowedOrigins))
+    
+    for _, origin := range allowedOrigins {
+        allowedOrigin[origin] = struct{}{}
+        fmt.Printf("CORS allowed origin added: '%s'\n", origin) // ← лог
+    }
+    
+    return func(next http.Handler) http.Handler {
+        return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+            origin := r.Header.Get("Origin")
+            
+            // ДЕТАЛЬНОЕ ЛОГИРОВАНИЕ
+            fmt.Printf("=== CORS DEBUG ===\n")
+            fmt.Printf("Request Origin: '%s'\n", origin)
+            fmt.Printf("Method: %s\n", r.Method)
+            fmt.Printf("Allowed origins map: %v\n", allowedOrigin)
+            
+            // Проверяем, разрешён ли origin
+            _, isAllowed := allowedOrigin[origin]
+            fmt.Printf("Is origin allowed? %v\n", isAllowed)
+            
+            // ВСЕГДА устанавливаем заголовки для preflight и запросов с origin
+            if origin != "" {
+                if isAllowed {
+                    w.Header().Set("Access-Control-Allow-Origin", origin)
+                    fmt.Printf("Set Access-Control-Allow-Origin: %s\n", origin)
+                } else {
+                    fmt.Printf("WARNING: Origin '%s' NOT in allowed list\n", origin)
+                    // Для отладки - временно разрешаем всё
+                    w.Header().Set("Access-Control-Allow-Origin", origin)
+                    fmt.Printf("DEBUG: Temporarily allowed origin: %s\n", origin)
+                }
+                
+                w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE, PATCH")
+                w.Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Authorization, X-Request-ID")
+                w.Header().Set("Access-Control-Allow-Credentials", "true")
+                w.Header().Set("Access-Control-Max-Age", "86400")
+            }
+            
+            // Обработка preflight
+            if r.Method == http.MethodOptions {
+                fmt.Printf("Preflight request - returning 200 OK\n")
+                w.WriteHeader(http.StatusOK)
+                return
+            }
+            
+            fmt.Printf("Proceeding to next handler\n")
+            next.ServeHTTP(w, r)
+        })
+    }
 }
 
 func RequestID() Middleware {
