@@ -11,14 +11,16 @@ import (
 	core_config "github.com/saitbatalov-go/golang-todoapp/internal/core/config"
 	core_logger "github.com/saitbatalov-go/golang-todoapp/internal/core/logger"
 	core_pgx_pool "github.com/saitbatalov-go/golang-todoapp/internal/core/repository/postgres/pool/pgx"
+	core_goredis_pool "github.com/saitbatalov-go/golang-todoapp/internal/core/repository/redis/pool/goredis"
 	core_http_middleware "github.com/saitbatalov-go/golang-todoapp/internal/core/transport/http/middleware"
 	core_transport_server "github.com/saitbatalov-go/golang-todoapp/internal/core/transport/http/server"
-	statistics_postgres_repository "github.com/saitbatalov-go/golang-todoapp/internal/features/statistics/repository"
+	statistics_postgres_repository "github.com/saitbatalov-go/golang-todoapp/internal/features/statistics/repository/postgres"
 	statistics_service "github.com/saitbatalov-go/golang-todoapp/internal/features/statistics/service"
 	statistics_transport_http "github.com/saitbatalov-go/golang-todoapp/internal/features/statistics/transport/http"
-	tasks_postgres_repository "github.com/saitbatalov-go/golang-todoapp/internal/features/tasks/repository/postgres"
-	tasks_service "github.com/saitbatalov-go/golang-todoapp/internal/features/tasks/service"
-	tasks_transport_http "github.com/saitbatalov-go/golang-todoapp/internal/features/tasks/transport/http"
+	tasks_service "github.com/saitbatalov-go/golang-todoapp/internal/features/tasks"
+	tasks_http "github.com/saitbatalov-go/golang-todoapp/internal/features/tasks/adapters/in/transport/http"
+	tasks_cached "github.com/saitbatalov-go/golang-todoapp/internal/features/tasks/adapters/out/repository/cached"
+	tasks_postgres "github.com/saitbatalov-go/golang-todoapp/internal/features/tasks/adapters/out/repository/postgres"
 	user_postgres_repository "github.com/saitbatalov-go/golang-todoapp/internal/features/users/repository/postgres"
 	users_service "github.com/saitbatalov-go/golang-todoapp/internal/features/users/service"
 	users_transport_http "github.com/saitbatalov-go/golang-todoapp/internal/features/users/transport/http"
@@ -54,29 +56,46 @@ func main() {
 	defer logger.Close()
 
 	logger.Debug("initializing database connection pool")
-	pool, err := core_pgx_pool.NewConnectionPool(
+	postgresPool, err := core_pgx_pool.NewConnectionPool(
 		ctx,
 		core_pgx_pool.NewConfigMust(),
 	)
 	if err != nil {
 		logger.Fatal("failed to create connection pool", zap.Error(err))
 	}
-	defer pool.Close()
+	defer postgresPool.Close()
+
+	redisPool, err := core_goredis_pool.NewPool(
+		ctx,
+		core_goredis_pool.NewConfigMust(),
+	)
+	if err != nil {
+		logger.Fatal("failed to init redis connection pool", zap.Error(err))
+	}
+	defer redisPool.Close()
+
 
 	logger.Debug("application time zone", zap.Any("zone", time.Local))
 
 	logger.Debug("initializing feature", zap.String("feature", "users"))
-	usersRepository := user_postgres_repository.NewUsersRepository(pool)
+	usersRepository := user_postgres_repository.NewUsersRepository(postgresPool)
 	usersService := users_service.NewUsersService(usersRepository)
 	usersTransportHTTP := users_transport_http.NewUserHTTPHandler(usersService)
 
 	logger.Debug("initalizing feature", zap.String("feature", "tasks"))
-	tasksRepository := tasks_postgres_repository.NewTasksRepository(pool)
+	tasksRepository := tasks_cached.NewCachedRepository(
+		redisPool,
+		tasks_postgres.NewTasksRepository(postgresPool),
+	)
+
+	// tasksRepository := tasks_postgres_repository.NewTasksRepository(postgresPool)
+
+
 	tasksService := tasks_service.NewTasksService(tasksRepository)
-	tasksTransportHTTP := tasks_transport_http.NewTasksHTTPHandler(tasksService)
+	tasksTransportHTTP := tasks_http.NewTasksHTTPHandler(tasksService)
 
 	logger.Debug("init feature", zap.String("feature", "statistcs"))
-	satisticsRepository := statistics_postgres_repository.NewStatisticsRepository(pool)
+	satisticsRepository := statistics_postgres_repository.NewStatisticsRepository(postgresPool)
 	statisticsService := statistics_service.NewStatisticsService(satisticsRepository)
 	statisticsTransportHTTP := statistics_transport_http.NewStatisticsHTTPHandler(statisticsService)
 

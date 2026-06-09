@@ -3,6 +3,7 @@ package users_service
 import (
 	"context"
 
+	"github.com/google/uuid"
 	"github.com/saitbatalov-go/golang-todoapp/internal/core/domain"
 )
 
@@ -11,21 +12,32 @@ type UsersService struct {
 }
 
 type UsersRepository interface {
-	CreateUser(ctx context.Context, user domain.User) (domain.User, error)
-	GetUsers(ctx context.Context, limit *int, offset *int) ([]domain.User, error)
+	SaveUser(
+		ctx context.Context,
+		user domain.User,
+	) (domain.User, error)
+
+	GetUsers(
+		ctx context.Context,
+		limit *int,
+		offset *int,
+	) ([]domain.User, error)
+
 	GetUser(
 		ctx context.Context,
-		id int,
+		id uuid.UUID,
 	) (domain.User, error)
-	DeleteUser(ctx context.Context, id int) error
 
-	PatchUser(
+	DeleteUser(
 		ctx context.Context,
-		id int,
+		id uuid.UUID,
+	) error
+
+	UpdateUser(
+		ctx context.Context,
 		user domain.User,
 	) (domain.User, error)
 }
-
 func NewUsersService(usersRepository UsersRepository) *UsersService {
 	return &UsersService{
 		usersRepository: usersRepository,

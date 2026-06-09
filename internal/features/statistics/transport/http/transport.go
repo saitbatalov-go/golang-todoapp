@@ -5,8 +5,9 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/saitbatalov-go/golang-todoapp/internal/core/domain"
-	core_transport_server "github.com/saitbatalov-go/golang-todoapp/internal/core/transport/http/server"
+	core_http_server "github.com/saitbatalov-go/golang-todoapp/internal/core/transport/http/server"
 )
 
 type StatisticsHTTPHandler struct {
@@ -16,24 +17,27 @@ type StatisticsHTTPHandler struct {
 type StatisticsService interface {
 	GetStatistics(
 		ctx context.Context,
-		userID *int,
+		userID *uuid.UUID,
 		from *time.Time,
 		to *time.Time,
-		) (domain.Statistics, error)
+	) (domain.Statistics, error)
 }
 
-func NewStatisticsHTTPHandler(statisticsService StatisticsService) *StatisticsHTTPHandler {
+
+func NewStatisticsHTTPHandler(
+	statisticsService StatisticsService,
+) *StatisticsHTTPHandler {
 	return &StatisticsHTTPHandler{
 		statisticsService: statisticsService,
 	}
 }
 
-func (h *StatisticsHTTPHandler) Routes() []core_transport_server.Route {
-	return []core_transport_server.Route{
-	
+// Routes возвращает маршруты REST API для статистики.
+func (h *StatisticsHTTPHandler) Routes() []core_http_server.Route {
+	return []core_http_server.Route{
 		{
-			Method:      http.MethodGet,
-			Path:        "/statistics",
+			Method:  http.MethodGet,
+			Path:    "/statistics",
 			Handler: h.GetStatistics,
 		},
 	}

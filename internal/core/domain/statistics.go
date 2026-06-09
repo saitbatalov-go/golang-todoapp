@@ -1,12 +1,51 @@
 package domain
 
-import "time"
+import (
+	"time"
+)
 
 type Statistics struct {
-	TasksCreated       int
-	TasksCompleted     int
-	TasksCompletedRate *float64
-	TasksAverageCompletionTime *time.Duration
+	TasksCreated               int
+	TasksCompleted             int
+	TasksCompletedRate         *float64       // процент выполненных задач (nil если задач нет)
+	TasksAverageCompletionTime *time.Duration // среднее время выполнения (nil если нет выполненных)
+}
+
+func CreateStatistics(tasks []Task) Statistics {
+	if len(tasks) == 0 {
+		return NewStatistics(0, 0, nil, nil)
+	}
+
+	tasksCreated := len(tasks)
+
+	tasksCompleted := 0
+	var totalCompletionDuration time.Duration
+	for _, task := range tasks {
+		if task.Completed {
+			tasksCompleted++
+		}
+
+		completionDuration := task.CompletionDuration()
+		if completionDuration != nil {
+			totalCompletionDuration += *completionDuration
+		}
+	}
+
+	tasksCompletedRate := float64(tasksCompleted) / float64(tasksCreated) * 100
+
+	var tasksAverageCompletionTime *time.Duration
+	if tasksCompleted > 0 && totalCompletionDuration != 0 {
+		avg := totalCompletionDuration / time.Duration(tasksCompleted)
+
+		tasksAverageCompletionTime = &avg
+	}
+
+	return NewStatistics(
+		tasksCreated,
+		tasksCompleted,
+		&tasksCompletedRate,
+		tasksAverageCompletionTime,
+	)
 }
 
 func NewStatistics(
@@ -16,9 +55,9 @@ func NewStatistics(
 	tasksAverageCompletionTime *time.Duration,
 ) Statistics {
 	return Statistics{
-		TasksCreated:       tasksCreated,
-		TasksCompleted:     tasksCompleted,
-		TasksCompletedRate: tasksCompletedRate,
+		TasksCreated:               tasksCreated,
+		TasksCompleted:             tasksCompleted,
+		TasksCompletedRate:         tasksCompletedRate,
 		TasksAverageCompletionTime: tasksAverageCompletionTime,
 	}
 }

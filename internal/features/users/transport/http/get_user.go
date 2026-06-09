@@ -8,38 +8,46 @@ import (
 	core_http_response "github.com/saitbatalov-go/golang-todoapp/internal/core/transport/http/response"
 )
 
+
 type GetUserResponse UserDTOResponse
 
-// GetUser godoc
-// @Summary     Получение пользователя
-// @Description Получение пользователя существующего в системе по ID
-// @Tags        Users
-// @Produces    json
-// @Param       id path int true "ID пользователя"
-// @Success     200 {object} GetUserResponse
-// @Failure     400 {object} core_http_response.ErrorResponse "Плохой запрос"
-// @Failure     500 {object} core_http_response.ErrorResponse "Внутренняя ошибка сервера"
-// @Router      /users/{id} [get]
+// GetUser       godoc
+// @Summary      Получение пользователя
+// @Description  Получение конкретного пользователя по его ID
+// @Tags         users
+// @Produce      json
+// @Param        id  path string true                          "ID получаемого пользователя" Format(uuid)
+// @Success      200 {object} GetUserResponse                  "Пользователь успешно найден"
+// @Failure      400 {object} core_http_response.ErrorResponse "Bad request"
+// @Failure      404 {object} core_http_response.ErrorResponse "User not found"
+// @Failure      500 {object} core_http_response.ErrorResponse "Internal server error"
+// @Router       /users/{id} [get]
 func (h *UserHTTPHandler) GetUser(rw http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	log := core_logger.FromLogger(ctx)
-
+	log := core_logger.FromContext(ctx)
 	responseHandler := core_http_response.NewHTTPResponseHandler(log, rw)
 
-	id, err := core_http_request.GetIntPathValues(r, "id")
+	userID, err := core_http_request.GetUUIDPathValue(r, "id")
 	if err != nil {
-		responseHandler.ErrorResponse(err, "failed to get 'id' path params")
+		responseHandler.ErrorResponse(
+			err,
+			"failed to get userID path value",
+		)
+
 		return
 	}
 
-	userDomain, err := h.userService.GetUser(ctx, id)
+	user, err := h.userService.GetUser(ctx, userID)
 	if err != nil {
-		responseHandler.ErrorResponse(err, "failed to get user")
+		responseHandler.ErrorResponse(
+			err,
+			"failed to get user",
+		)
+
 		return
 	}
 
-	response := GetUserResponse(userDTOFromDomain(userDomain))
+	response := GetUserResponse(userDTOFromDomain(user))
 
 	responseHandler.JSONResponse(response, http.StatusOK)
-
 }

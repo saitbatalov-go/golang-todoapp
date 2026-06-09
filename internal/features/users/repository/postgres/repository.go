@@ -1,19 +1,17 @@
-package user_postgres_repository
+package users_postgres_repository
 
-import core_postgres_pool "github.com/saitbatalov-go/golang-todoapp/internal/core/repository/postgres/pool"
+import (
+	core_postgres_pool "github.com/saitbatalov-go/golang-todoapp/internal/core/repository/postgres/pool"
+)
 
-
-type UsersRespository struct {
+type UsersRepository struct {
 	pool core_postgres_pool.Pool
-
 }
 
 func NewUsersRepository(
 	pool core_postgres_pool.Pool,
-) *UsersRespository {
-	return &UsersRespository{
+) *UsersRepository {
+	return &UsersRepository{
 		pool: pool,
 	}
 }
-
-

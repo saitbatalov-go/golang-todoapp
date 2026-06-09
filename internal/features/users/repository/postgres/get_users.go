@@ -1,4 +1,4 @@
-package user_postgres_repository
+package users_postgres_repository
 
 import (
 	"context"
@@ -7,15 +7,20 @@ import (
 	"github.com/saitbatalov-go/golang-todoapp/internal/core/domain"
 )
 
-func (r *UsersRespository) GetUsers(ctx context.Context, limit *int, offset *int) ([]domain.User, error) {
+func (r *UsersRepository) GetUsers(
+	ctx context.Context,
+	limit *int,
+	offset *int,
+) ([]domain.User, error) {
 	ctx, cancel := context.WithTimeout(ctx, r.pool.OpTimeout())
 	defer cancel()
 
 	query := `
-		SELECT id, version, full_name, phone_number
-		FROM todoapp.users
-		ORDER BY id ASC
-		LIMIT $1 OFFSET $2
+	SELECT id, version, full_name, phone_number
+	FROM todoapp.users
+	ORDER BY id ASC
+	LIMIT $1
+	OFFSET $2;
 	`
 
 	rows, err := r.pool.Query(
@@ -32,17 +37,17 @@ func (r *UsersRespository) GetUsers(ctx context.Context, limit *int, offset *int
 	var userModels []UserModel
 	for rows.Next() {
 		var userModel UserModel
-		if err := rows.Scan(&userModel.ID, &userModel.Version, &userModel.FullName, &userModel.PhoneNumber); err != nil {
-			return nil, fmt.Errorf("scan row users: %w", err)
+		if err := userModel.Scan(rows); err != nil {
+			return nil, fmt.Errorf("scan users: %w", err)
 		}
 
 		userModels = append(userModels, userModel)
 	}
-
 	if err := rows.Err(); err != nil {
-		return nil, fmt.Errorf("iterating rows users: %w", err)
+		return nil, fmt.Errorf("next rows: %w", err)
 	}
 
-	userDomains := userDomainsFromUserModels(userModels)
+	userDomains := modelsToDomains(userModels)
+
 	return userDomains, nil
 }

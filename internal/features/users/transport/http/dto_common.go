@@ -1,16 +1,18 @@
 package users_transport_http
 
 import (
+	"github.com/google/uuid"
 	"github.com/saitbatalov-go/golang-todoapp/internal/core/domain"
 )
 
 type UserDTOResponse struct {
-	ID          int     `json:"id" example:"1"`
-	Version     int     `json:"version" example:"3"`
-	FullName    string  `json:"full_name" example:"Aza Saitbatalov"`
-	PhoneNumber *string `json:"phone_number" example:"+79998887766"`
+	ID          uuid.UUID `json:"id"           example:"550e8400-e29b-41d4-a716-446655440000"`
+	Version     int       `json:"version"      example:"3"`
+	FullName    string    `json:"full_name"    example:"Ivan Ivanov"`
+	PhoneNumber *string   `json:"phone_number" example:"+79998887766"`
 }
 
+// userDTOFromDomain конвертирует доменный объект User в DTO для HTTP-ответа.
 func userDTOFromDomain(user domain.User) UserDTOResponse {
 	return UserDTOResponse{
 		ID:          user.ID,
@@ -20,6 +22,7 @@ func userDTOFromDomain(user domain.User) UserDTOResponse {
 	}
 }
 
+// usersDTOFromDomains конвертирует список доменных объектов в список DTO.
 func usersDTOFromDomains(users []domain.User) []UserDTOResponse {
 	usersDTO := make([]UserDTOResponse, len(users))
 

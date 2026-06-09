@@ -4,17 +4,24 @@ import (
 	"fmt"
 	"regexp"
 
+	"github.com/google/uuid"
 	core_errors "github.com/saitbatalov-go/golang-todoapp/internal/core/errors"
 )
 
 type User struct {
-	ID          int
-	Version     int
+	ID      uuid.UUID
+	Version int
+
 	FullName    string
 	PhoneNumber *string
 }
 
-func NewUser(id int, version int, fullName string, phoneNumber *string) User {
+func NewUser(
+	id uuid.UUID,
+	version int,
+	fullName string,
+	phoneNumber *string,
+) User {
 	return User{
 		ID:          id,
 		Version:     version,
@@ -23,34 +30,54 @@ func NewUser(id int, version int, fullName string, phoneNumber *string) User {
 	}
 }
 
-func NewUserUninitialized(fullName string, phoneNumber *string) User {
+
+func CreateUser(
+	fullName string,
+	phoneNumber *string,
+) User {
+	var (
+		id      = uuid.New()
+		version = 1
+	)
+
 	return NewUser(
-		UninitializedID,
-		UninitializedVersion,
+		id,
+		version,
 		fullName,
 		phoneNumber,
 	)
 }
 
 func (u *User) Validate() error {
-
-	fullNameLength := len([]rune(u.FullName))
-	if fullNameLength < 3 || fullNameLength > 100 {
-		return fmt.Errorf("invalid `FullName` len: %d:%w", fullNameLength, core_errors.ErrInvalidArgument)
+	fullNameLen := len([]rune(u.FullName))
+	if fullNameLen < 3 || fullNameLen > 100 {
+		return fmt.Errorf(
+			"invalid `FullName` len: %d: %w",
+			fullNameLen,
+			core_errors.ErrInvalidArgument,
+		)
 	}
 
 	if u.PhoneNumber != nil {
-		phoneNumberLength := len([]rune(*u.PhoneNumber))
-		if phoneNumberLength < 10 || phoneNumberLength > 15 {
-			return fmt.Errorf("invalid `PhoneNumber` len: %d:%w", phoneNumberLength, core_errors.ErrInvalidArgument)
+		phoneNumberLen := len([]rune(*u.PhoneNumber))
+		if phoneNumberLen < 10 || phoneNumberLen > 15 {
+			return fmt.Errorf(
+				"invalid `PhoneNumber` len: %d: %w",
+				phoneNumberLen,
+				core_errors.ErrInvalidArgument,
+			)
 		}
 
 		re := regexp.MustCompile(`^\+[0-9]+$`)
 
 		if !re.MatchString(*u.PhoneNumber) {
-			return fmt.Errorf("invalid `PhoneNumber` format: %s:%w", *u.PhoneNumber, core_errors.ErrInvalidArgument)
+			return fmt.Errorf(
+				"invalid `PhoneNumber` format: %w",
+				core_errors.ErrInvalidArgument,
+			)
 		}
 	}
+
 	return nil
 }
 
@@ -59,19 +86,24 @@ type UserPatch struct {
 	PhoneNumber Nullable[string]
 }
 
-func NewUserPatch(fullName Nullable[string], phoneNumber Nullable[string]) UserPatch {
+
+func NewUserPatch(
+	fullName Nullable[string],
+	phoneNumber Nullable[string],
+) UserPatch {
 	return UserPatch{
 		FullName:    fullName,
 		PhoneNumber: phoneNumber,
 	}
 }
 
-func (p UserPatch) Validate() error {
+
+func (p *UserPatch) Validate() error {
 	if p.FullName.Set && p.FullName.Value == nil {
 		return fmt.Errorf(
-			"PATCH invalid `FullName` can't be value null: %w",
-			 core_errors.ErrInvalidArgument,
-			)
+			"`FullName` can't be patched to NULL: %w",
+			core_errors.ErrInvalidArgument,
+		)
 	}
 
 	return nil
@@ -79,22 +111,25 @@ func (p UserPatch) Validate() error {
 
 
 func (u *User) ApplyPatch(patch UserPatch) error {
-	if err:=patch.Validate(); err != nil {
+	if err := patch.Validate(); err != nil {
 		return fmt.Errorf("validate user patch: %w", err)
 	}
 
 	tmp := *u
+
 	if patch.FullName.Set {
 		tmp.FullName = *patch.FullName.Value
 	}
+
 	if patch.PhoneNumber.Set {
 		tmp.PhoneNumber = patch.PhoneNumber.Value
 	}
 
-	if err:=tmp.Validate(); err != nil {
+	if err := tmp.Validate(); err != nil {
 		return fmt.Errorf("validate patched user: %w", err)
 	}
 
 	*u = tmp
+
 	return nil
 }

@@ -20,6 +20,14 @@ var (
 func ToContext(ctx context.Context, logger *Logger) context.Context {
 	return context.WithValue(ctx, key, logger)
 }
+func FromContext(ctx context.Context) *Logger {
+	log, ok := ctx.Value(key).(*Logger)
+	if !ok {
+		panic("no logger in context")
+	}
+
+	return log
+}
 
 type Logger struct {
 	*zap.Logger

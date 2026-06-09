@@ -1,35 +1,32 @@
-package user_postgres_repository
+package users_postgres_repository
 
 import (
 	"context"
-
 	"fmt"
 
+	"github.com/google/uuid"
 	core_errors "github.com/saitbatalov-go/golang-todoapp/internal/core/errors"
 )
 
-
-func (s *UsersRespository) DeleteUser(ctx context.Context, id int) error {
-	ctx, cancel := context.WithTimeout(ctx, s.pool.OpTimeout())
+func (r *UsersRepository) DeleteUser(
+	ctx context.Context,
+	id uuid.UUID,
+) error {
+	ctx, cancel := context.WithTimeout(ctx, r.pool.OpTimeout())
 	defer cancel()
 
 	query := `
-		DELETE FROM todoapp.users
-		WHERE id = $1
+	DELETE FROM todoapp.users
+	WHERE id=$1;
 	`
 
-	cmdTag, err := s.pool.Exec(ctx, query, id)
+	cmdTag, err := r.pool.Exec(ctx, query, id)
 	if err != nil {
-		return fmt.Errorf("delete user: %w", err)
+		return fmt.Errorf("exec query: %w", err)
 	}
-
 	if cmdTag.RowsAffected() == 0 {
-		return fmt.Errorf(
-			"user not found with id: %d: %w",
-			id,
-			core_errors.ErrNotFound,
-		)
-	} 
+		return fmt.Errorf("user with id='%s': %w", id, core_errors.ErrNotFound)
+	}
 
 	return nil
 }

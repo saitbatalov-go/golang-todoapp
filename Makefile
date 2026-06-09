@@ -2,9 +2,7 @@
 include .env
 export
 
-
-PROJECT_ROOT := $(shell pwd)
-export PROJECT_ROOT
+export PROJECT_ROOT=$(shell pwd)
 
 
 DB_URL := postgres://$(POSTGRES_USER):$(POSTGRES_PASSWORD)@todoapp-postgres:5432/$(POSTGRES_DB)?sslmode=disable
