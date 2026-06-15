@@ -1,4 +1,4 @@
-FROM golang:1.26.2-bookworm AS builder
+FROM golang:1.25-bookworm AS builder
 
 WORKDIR /app
 
@@ -9,7 +9,7 @@ COPY . .
 
 RUN CGO_ENABLED=0 go build -o /app/cmd/todoapp/exe /app/cmd/todoapp
 
-FROM alpine:3.23
+FROM alpine:3.18
 
 WORKDIR /app
 

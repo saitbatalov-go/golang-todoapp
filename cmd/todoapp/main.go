@@ -10,6 +10,7 @@ import (
 
 	core_config "github.com/saitbatalov-go/golang-todoapp/internal/core/config"
 	core_logger "github.com/saitbatalov-go/golang-todoapp/internal/core/logger"
+	core_kafka "github.com/saitbatalov-go/golang-todoapp/internal/core/repository/kafka"
 	core_pgx_pool "github.com/saitbatalov-go/golang-todoapp/internal/core/repository/postgres/pool/pgx"
 	core_goredis_pool "github.com/saitbatalov-go/golang-todoapp/internal/core/repository/redis/pool/goredis"
 	core_http_middleware "github.com/saitbatalov-go/golang-todoapp/internal/core/transport/http/middleware"
@@ -20,7 +21,9 @@ import (
 	tasks_service "github.com/saitbatalov-go/golang-todoapp/internal/features/tasks"
 	tasks_http "github.com/saitbatalov-go/golang-todoapp/internal/features/tasks/adapters/in/transport/http"
 	tasks_cached "github.com/saitbatalov-go/golang-todoapp/internal/features/tasks/adapters/out/repository/cached"
+	adapters_out_repository_kafka "github.com/saitbatalov-go/golang-todoapp/internal/features/tasks/adapters/out/repository/kafka"
 	tasks_postgres "github.com/saitbatalov-go/golang-todoapp/internal/features/tasks/adapters/out/repository/postgres"
+	ports_out_repository "github.com/saitbatalov-go/golang-todoapp/internal/features/tasks/ports/out/repository"
 	user_postgres_repository "github.com/saitbatalov-go/golang-todoapp/internal/features/users/repository/postgres"
 	users_service "github.com/saitbatalov-go/golang-todoapp/internal/features/users/service"
 	users_transport_http "github.com/saitbatalov-go/golang-todoapp/internal/features/users/transport/http"
@@ -82,11 +85,42 @@ func main() {
 	usersService := users_service.NewUsersService(usersRepository)
 	usersTransportHTTP := users_transport_http.NewUserHTTPHandler(usersService)
 
+
+		  logger.Debug("initializing kafka connection")
+    kafkaCfg := core_kafka.NewConfigMust()
+    
+    kafkaProducer, err := core_kafka.NewMessageProducer(ctx, kafkaCfg, logger)
+    if err != nil {
+        // Не фатально - продолжаем без Kafka
+        // Пользовательский опыт не страдает, просто не будет уведомлений
+        logger.Warn("failed to init kafka producer, events disabled", zap.Error(err))
+        kafkaProducer = nil
+    } else {
+        logger.Info("kafka producer initialized successfully")
+        defer kafkaProducer.Close()
+    }
+    
+    // ========== Инициализация фичи tasks (с Kafka декоратором) ==========
+    logger.Debug("initializing feature", zap.String("feature", "tasks"))
+    
+    // 1. Базовый репозиторий (PostgreSQL)
+    tasksPostgresRepo := tasks_postgres.NewTasksRepository(postgresPool)
+    
+    // 2. Кешированный репозиторий (PostgreSQL + Redis)
+    tasksCachedRepo := tasks_cached.NewCachedRepository(redisPool, tasksPostgresRepo)
+    
+    // 3. Если Kafka доступен - оборачиваем в декоратор для отправки событий
+    var tasksRepository ports_out_repository.TasksRepository
+    if kafkaProducer != nil {
+        tasksRepository = adapters_out_repository_kafka.NewKafkaRepository(kafkaProducer, tasksCachedRepo, logger)
+        logger.Debug("tasks repository with Kafka events")
+    } else {
+        tasksRepository = tasksCachedRepo
+        logger.Debug("tasks repository without Kafka events (fallback)")
+    }
+
 	logger.Debug("initalizing feature", zap.String("feature", "tasks"))
-	tasksRepository := tasks_cached.NewCachedRepository(
-		redisPool,
-		tasks_postgres.NewTasksRepository(postgresPool),
-	)
+
 
 	// tasksRepository := tasks_postgres_repository.NewTasksRepository(postgresPool)
 

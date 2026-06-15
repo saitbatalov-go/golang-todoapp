@@ -99,3 +99,56 @@ swagger-gen:
 
 ps:
 	@docker compose ps
+	
+
+	# ========== НОВЫЕ КОМАНДЫ ДЛЯ KAFKA/REDPANDA ==========
+
+# Запуск всех сервисов (PostgreSQL, Redis, Redpanda, приложение, Telegram)
+kafka-up:
+	@echo "🚀 Запуск всех сервисов..."
+	@docker-compose --env-file .env up -d todoapp-postgres todoapp-redis redpanda redpanda-console todoapp telegram
+	@sleep 5
+	@echo "✅ Все сервисы запущены"
+	@echo "📊 Redpanda Console: http://localhost:8080"
+
+# Остановка всех сервисов
+kafka-down:
+	@docker-compose --env-file .env down
+
+# Перезапуск Telegram consumer
+telegram-restart:
+	@docker-compose --env-file .env restart telegram
+
+# Логи Telegram consumer
+telegram-logs:
+	@docker-compose --env-file .env logs -f telegram
+
+# Логи Redpanda
+redpanda-logs:
+	@docker-compose --env-file .env logs -f redpanda
+
+# Создание топика вручную (если нужно)
+redpanda-create-topic:
+	@docker exec -it todoapp-redpanda rpk topic create todoapp --partitions 3 --replicas 1 || echo "Топик уже существует"
+
+# Просмотр сообщений в топике
+redpanda-consume:
+	@docker exec -it todoapp-redpanda rpk topic consume todoapp --offset 0 --partitions 0
+
+# Просмотр всех топиков
+redpanda-topics:
+	@docker exec -it todoapp-redpanda rpk topic list
+
+# Полный запуск для разработки (с пересборкой)
+dev-up:
+	@echo "🔨 Пересборка и запуск..."
+	@docker-compose --env-file .env down
+	@docker-compose --env-file .env build --no-cache todoapp telegram
+	@docker-compose --env-file .env up -d
+	@echo "✅ Готово!"
+	@echo "📊 API: http://localhost:5050"
+	@echo "📊 Redpanda Console: http://localhost:8080"
+
+# Проверка статуса всех сервисов
+kafka-ps:
+	@docker-compose --env-file .env ps
